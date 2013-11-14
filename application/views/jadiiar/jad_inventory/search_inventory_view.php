@@ -69,7 +69,7 @@
 							<tr>
 								<td><a id="example6" href = "<?php echo $inven['goods_image_url'];?>">
 									<img title="<?php echo $inven['goods_desc'];?>" 
-									     src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($inven['goods_image_url']);?>" height="40px" width="60px" >
+									     src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($inven['goods_image_url']);?>" height="60px" width="60px" >
 								</a></td>		
 								<td><a href = "<?php echo $base_url; ?>index.php/jad_inventory/inventory_merch_details/<?php echo $inven['merch_id'];?>">
 									<?php echo $inven['merch_id'];?></a>

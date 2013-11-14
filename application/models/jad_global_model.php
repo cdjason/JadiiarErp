@@ -367,7 +367,7 @@ class Jad_global_model extends CI_Model {
 	 * 参数：用户ID 
 	 */ 
 	 function get_url_sub_image_by_formal($fUrl){
-	 	$subUrl =  substr($fUrl,0,strpos($fUrl,'-me.')).'-2s.jpg';
+	 	$subUrl =  substr($fUrl,0,strpos($fUrl,'-me.')).'-sq.jpg';
 	 	return $subUrl;
 	 }
   /**
