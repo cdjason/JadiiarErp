@@ -1,0 +1,10 @@
+  <meta charset="utf-8">
+	<meta name="robots" content="index, follow"/>
+	<meta name="designer" content="haseydesign - Rob Hussey : rob @ haseydesign .com"/> 
+	<meta name="copyright" content="Copyright <?php echo date('Y');?> Rob Hussey, All Copyrights Reserved"/>
+	<meta http-equiv="imagetoolbar" content="no"/>	
+	<link rel="stylesheet" href="<?php echo $includes_dir;?>css/global.css?v=1.0">
+	<link rel="stylesheet" href="<?php echo $includes_dir;?>css/structure.css?v=1.0">
+	<link rel="stylesheet" href="<?php echo $includes_dir;?>css/jquery.fancybox-1.3.4.css">
+  <link rel="stylesheet" href="<?php echo $includes_dir;?>css/jquery-ui.css?v=1.0">
+	<link rel="stylesheet" href="<?php echo $includes_dir;?>css/style.css?v=1.0">

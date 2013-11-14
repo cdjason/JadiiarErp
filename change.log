@@ -1,0 +1,20 @@
+modified:
+./application/views/includes/footer.php
+./application/views/jadiiar/jad_admin/user_accounts_view.php
+./application/views/jadiiar/jad_admin/user_groups_view.php
+./application/views/jadiiar/jad_admin/privileges_view.php
+./application/views/jadiiar/jad_public/password_update_view.php
+./application/views/jadiiar/jad_dictionary/branches_view.php
+./application/views/jadiiar/jad_goods/goods_first_view.php
+./application/views/jadiiar/jad_public/account_update_view.php
+./application/views/jad_auth/login_view.php
+
+modified and re-encoded:
+./application/controllers/jad_dictionary.php
+./application/controllers/jad_auth_admin.php
+./application/controllers/jad_goods.php
+./application/controllers/jad_auth.php
+
+
+ignore database.php
+
