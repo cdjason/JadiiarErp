@@ -1,7 +1,7 @@
 <div class="sidebar-nav">
-    <a href="#dashboard-menu" class="nav-header" data-toggle="collapse"><i class="icon-dashboard"></i>Dashboard</a>
+    <a href="#dashboard-menu" class="nav-header" data-toggle="collapse"><i class="icon-dashboard"></i>商品信息维护</a>
     <ul id="dashboard-menu" class="nav nav-list collapse">
-        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html">商品信息维护</a></li>
         <li class="active"><a href="users.html">Sample List</a></li>
         <li ><a href="user.html">Sample Item</a></li>
         <li ><a href="media.html">Media</a></li>
@@ -23,6 +23,12 @@
         <li ><a href="503.html">503 page</a></li>
     </ul>
     
+<a href="#item-data-menu" class="nav-header collapsed" data-toggle="collapse"><i class="icon-globe"></i>商品信息维护<i class="icon-chevron-up"></i></a>
+    <ul id="item-data-menu" class="nav nav-list collapse <?php if($this->uri->segment(2)=='manage_suppliers' || $this->uri->segment(2)=='manage_branches') echo 'in';else echo ''; ?>">
+        <li <?php echo ($this->uri->segment(2)=='manage_suppliers')?"class = active":""; ?>><a href="<?php echo $base_url;?>index.php/jad_goods/manage_product">产品信息维护</a></li>
+        <li <?php echo ($this->uri->segment(2)=='manage_branches')?"class = active":""; ?>><a href="<?php echo $base_url;?>index.php/jad_dictionary/manage_branches">商品信息维护</a></li>
+    </ul>
+
 <a href="#other-data-menu" class="nav-header collapsed" data-toggle="collapse"><i class="icon-globe"></i>其他信息维护 <i class="icon-chevron-up"></i></a>
     <ul id="other-data-menu" class="nav nav-list collapse <?php if($this->uri->segment(2)=='manage_suppliers' || $this->uri->segment(2)=='manage_branches') echo 'in';else echo ''; ?>">
         <li <?php echo ($this->uri->segment(2)=='manage_suppliers')?"class = active":""; ?>><a href="<?php echo $base_url;?>index.php/jad_dictionary/manage_suppliers">供应商信息维护</a></li>

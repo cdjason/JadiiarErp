@@ -50,20 +50,33 @@ class Jad_goods extends CI_Controller {
 	 * add_goods_first
 	 * 新增商品一级信息
 	 */ 
-	function add_goods_first(){ 
+	function add_product(){ 
 		if ($this->input->post('add_goods_first'))
 		{
 			$this->load->model('jad_goods_model');
-			$this->jad_goods_model->add_goods_first();
+			$this->jad_goods_model->add_product();
 		}
+        //从TOP API里面获取类目信息
+        $topapi_config = array(
+            'app_key'=>'21669164', 
+            'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
+        );
+        $this->load->library('topsdk', $topapi_config );
+        $this->topsdk->autoload('ItemcatsGetRequest');
+        $this->topsdk->req->setFields("cid,parent_cid,name,is_parent");
+        $this->topsdk->req->setParentCid(0);
+        
+        $result = $this->topsdk->get_data();
+        $this->data['item_cats'] = $result['item_cats']['item_cat'];
+        //var_dump($data['taokes']);
 	  //获取类别列表
 	  	
-		$this->data['categorys'] = $this->config->item('categ_info');	 
-		$this->data['brands'] = $this->config->item('brand_info');
-		$this->data['years'] = $this->config->item('year_info');
+		//$this->data['categorys'] = $this->config->item('categ_info');	 
+		//$this->data['brands'] = $this->config->item('brand_info');
+		//$this->data['years'] = $this->config->item('year_info');
 		$this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];		
 		
-		$this->load->view('jadiiar/jad_goods/goods_first_add_view',$this->data);
+		$this->load->view('jadiiar/jad_goods/product_add_view',$this->data);
 	}	 	  
  	/**
  	 * manage_goods_first
@@ -71,6 +84,29 @@ class Jad_goods extends CI_Controller {
  	 * 并允许对商品一级信息进行编辑、删除和过期操作
  	 * 商品过期意味着在新建涉及购买子任务的任务时，在选择货号的时候，不会出现过期的货号。
  	 */
+    function manage_product()
+    {
+        $this->load->model('jad_goods_model');
+        if (! $this->flexi_auth->is_privileged('View Goods'))
+        {
+            $this->session->set_flashdata('message', '<p class="error_msg">您没有权限查看该页面</p>');
+            redirect('jad_auth');
+        } 
+        if ($this->input->post('search_product') && $this->input->post('search_query')) 
+        {
+            $search_query = str_replace(' ','-',$this->input->post('search_query'));
+            redirect('jad_goods/manage_product/search/'.$search_query.'/page/');
+        }
+        else if ($this->input->post('delete_product')) 
+        {
+            $this->jad_goods_model->update_product();
+        }
+        // 获取所有的产品信息
+        $this->jad_goods_model->get_product();
+        // Set any returned status/error messages.
+        $this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];	
+        $this->load->view('jadiiar/jad_goods/product_view', $this->data);
+    }
     function manage_goods_first()
     {
 		    $this->load->model('jad_goods_model');
@@ -79,6 +115,7 @@ class Jad_goods extends CI_Controller {
 		        	  $this->session->set_flashdata('message', '<p class="error_msg">您没有权限查看该页面</p>');
 			          redirect('jad_auth');
 		        }
+
         if ($this->input->post('search_goods') && $this->input->post('search_query')) 
 		    {
 			    $search_query = str_replace(' ','-',$this->input->post('search_query'));
@@ -222,7 +259,48 @@ class Jad_goods extends CI_Controller {
 	  $this->data['size'] = $this->config->item('merch_size');	
     $this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];	
 	  $this->load->view('jadiiar/jad_goods/merch_details_view', $this->data);		
-	} 
- 	  
- 	  
+    }
+
+ 	/**
+     * ajax调用接口，通过父节点cid,调用TOP API获取子类信息
+     * get_itemcats_by_parent_id
+ 	 */
+    function get_itemcats_by_parent_id()
+    {
+		$cId = $_POST['parentId']; 
+		$this->load->model('jad_goods_model');
+        $this->jad_goods_model->get_itemcats_by_parent_id($cId);
+    }  
+ 	 /**
+     * ajax调用接口，通过节点cid,调用该节点下的属性列表
+     * get_itemcats_by_parent_id
+ 	 */
+    function get_itemprops_by_cid()
+    {
+		$cId = $_POST['parentId']; 
+		$this->load->model('jad_goods_model');
+        $this->jad_goods_model->get_itemprops_by_cid($cId);
+    } 
+  	 /**
+     * ajax调用接口，通过节点cid,调用该节点下的属性列表
+     * get_itemcats_by_parent_id
+ 	 */
+    function get_child_itemprops()
+    {
+		$cId = $_POST['cId']; 
+		$parentPId = $_POST['parentPId']; 
+		$this->load->model('jad_goods_model');
+        $this->jad_goods_model->get_child_itemprops($cId,$parentPId);
+    } 
+	 /**
+     * ajax调用接口，通过节点cid,调用该节点下的属性列表
+     * get_itemcats_by_parent_id
+ 	 */
+    function get_propvalues()
+    {
+		$cId = $_POST['cId']; 
+		$pId = $_POST['pId']; 
+		$this->load->model('jad_goods_model');
+        $this->jad_goods_model->get_propvalues($cId,$pId);
+    } 
 }
