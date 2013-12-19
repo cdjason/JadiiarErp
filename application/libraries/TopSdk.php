@@ -90,6 +90,7 @@ class TopSdk
 	/**
 	 * get_data
 	 *
+     * 获取不需要用户授权的接口返回的数据
 	 * COMMENT : get_data : comment
 	 *
 	 * @access	public
@@ -99,6 +100,14 @@ class TopSdk
 	public function get_data()
 	{
 		$resp = $this->top_cilent->execute($this->req);
+        if ("array" == $this->format) {	
+			$resp = $this->_get_object_vars_final($resp);
+		}
+		return $resp;
+	}    	
+	public function get_auth_data($sessionKey)
+	{
+		$resp = $this->top_cilent->execute($this->req,$sessionKey);
         if ("array" == $this->format) {	
 			$resp = $this->_get_object_vars_final($resp);
 		}

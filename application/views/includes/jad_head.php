@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>lib/bootstrap/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>stylesheets/theme.css">
 <link rel="stylesheet" href="<?php echo $includes_dir;?>lib/font-awesome/css/font-awesome.css">
+<link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>CLEditor1_4_3/jquery.cleditor.css">
 <!-- Demo page code -->
 
 <style type="text/css">

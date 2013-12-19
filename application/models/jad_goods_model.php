@@ -25,30 +25,55 @@ class Jad_goods_model extends CI_Model {
 	 * add_goods_first
 	 * 新增商品一级信息
 	 */
+    //单独定义一个生成货号的方法算了，这样随时都可以调用
+    function get_new_series_num()
+    {
+        //生成10位随机货号，并判断该货号在数据库中是否存在，若存在，则重新生成
+        $productId = $this->generate_randnum(10);
+        while($this->db->get_where('info_product', array('product_id' => $productId))->num_rows() != 0){
+            $productId = $this->generate_randnum(10);
+        }
+        return $productId;
+
+    }
+    //单独定义一个生成商品编码的方法，这样随时都可以调用
+    function get_new_product_item_num($productId)
+    {
+        //生成3位随机号，并判断该号在数据库中是否存在，若存在，则重新生成
+        $productItemId = $this->generate_randnum(3);
+        $pItemId = (string)$productId . (string)$productItemId;
+        while($this->db->get_where('info_product_item', array('item_id' => $pItemId))->num_rows() != 0){
+            $productItemId = $this->generate_randnum(3);
+            $pItemId = (string)$productId . (string)$productItemId;
+        }
+        return $pItemId;
+
+    }
     function add_product()
     {
         $cId = $this->input->post('cid');
         $props = $this->input->post('props');
         $inputStr = $this->input->post('input_str');
         $inputPids = $this->input->post('input_pids');
-
-        //生成10位随机货号，并判断该货号在数据库中是否存在，若存在，则重新生成
-        $productId = $this->generate_randnum(10);
-        while($this->db->get_where('info_product', array('product_id' => $productId))->num_rows() != 0){
-            $productId = $this->generate_randnum(10);
-        }
+        $productId = $this->input->post('product_hidd_id');
+        $productDesc = $this->input->post('product_desc');
+        $productImgUrl = $this->input->post('product_img_url');
+        $productBrand = $this->input->post('product_brand');
 
         $profile_data = array(
-            'product_id' => $this->generate_randnum(10),
+            'product_id' => $productId,
             'product_title' => $this->input->post('product_title'),
+            'product_desc' => $productDesc,
+            'product_img_url' => $productImgUrl,
+            'product_brand' => $productBrand,
             'cid' => $cId,
-            'props' => $props,
+            'props' => substr($props,0,strlen($props)-1),
             'inputs_str' => $inputStr,
             'inputs_pids' => $inputPids,
             'product_expired' => 0
         );
 		$this->db->insert('info_product',$profile_data);	
-        redirect('jad_goods/manage_product');	
+        redirect('jad_goods/manage_products');	
     }
 	/**
 	 * add_goods_first
@@ -111,19 +136,23 @@ class Jad_goods_model extends CI_Model {
 		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
 		return FALSE;
 	}
-
+    
  	/**
 	 * get_goods_first
 	 * 获取所有商品的一级信息
 	 */
-    function get_product()
+    function get_product($productId)
+    {
+        return $this->db->get_where('info_product',array( 'product_id' => $productId ))->row_array();
+    } 
+    function get_products()
     {
         $uri = $this->uri->uri_to_assoc(3);     
         $limit = $this->config->item('pag_limit');
         $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
         if (array_key_exists('search', $uri))
         {
-            $pagination_url = 'jad_goods/manage_product/search/'.$uri['search'].'/';
+            $pagination_url = 'jad_goods/manage_products/search/'.$uri['search'].'/';
             $config['uri_segment'] = 6; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
             $search_query = str_replace('-',' ',urldecode($uri['search']));
             
@@ -143,7 +172,7 @@ class Jad_goods_model extends CI_Model {
         }
         else
         {
-            $pagination_url = 'jad_goods/manage_product/';
+            $pagination_url = 'jad_goods/manage_products/';
 			$search_query = FALSE;
 			$config['uri_segment'] = 4;
 	        $query = $this->db->get_where('info_product',array(), $limit, $offset);
@@ -161,7 +190,119 @@ class Jad_goods_model extends CI_Model {
 		$this->data['search_query'] = $search_query; // Populates search input field in view.
 		$this->data['pagination']['links'] = $this->pagination->create_links();
 		$this->data['pagination']['total_product'] = $total_product;
+    }
 
+    function publish_product_item(){
+        //从发布商品页面获取该商品发布必须的参数
+        $itemNum = $this->input->post('num');
+        $itemPrice = $this->input->post('price');
+        $itemType = 'fixed';
+        $itemStuffStatus = $this->input->post('stuffStatus');
+        $itemTitle = $this->input->post('productTitle');
+        $itemDesc = $this->input->post('input11');
+        $itemLoState = '重庆';
+        $itemLoCity = '重庆';
+        $cId = $this->input->post('cid');
+
+        //props需要拼接判断处理，可能有些属性下面没有inputs_str或者inputs_pids，先假设都有的情况
+        $props = '';
+        if( $this->input->post('product_props') != '0' ){
+            $props = $props . $this->input->post('product_props') . ';';
+        }
+        if( $this->input->post('product_item_props') != '0' ){
+            $props = $props . $this->input->post('product_item_props') . ';';
+        }
+        if( $this->input->post('must_props') != '0' ){
+            $props = $props . $this->input->post('must_props');
+        }
+        $skuProps = $this->input->post('product_item_props');
+        $propertyAlias = $this->input->post('product_item_property_alias');
+        $inputStr = $this->input->post('product_inputs_str');
+        $inputPids = $this->input->post('product_inputs_pids');
+        //var_dump($props);
+        //var_dump($propertyAlias);
+        //var_dump($skuProps);
+        //var_dump($inputStr);
+        //var_dump($inputPids);
+        //var_dump($cId);
+
+        $topapi_config = array(
+            'app_key'=>'21669164', 
+            'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
+        );
+        $this->load->library('topsdk', $topapi_config );
+        $this->topsdk->autoload('ItemAddRequest');
+        $this->topsdk->req->setNum($itemNum);
+        $this->topsdk->req->setPrice($itemPrice);
+        $this->topsdk->req->setType($itemType);
+        $this->topsdk->req->setStuffStatus($itemStuffStatus);
+        $this->topsdk->req->setTitle($itemTitle);
+        $this->topsdk->req->setDesc($itemDesc);
+        $this->topsdk->req->setLocationState($itemLoState);
+        $this->topsdk->req->setLocationCity($itemLoCity);
+        $this->topsdk->req->setCid($cId);
+        $this->topsdk->req->setProps($props);
+        $this->topsdk->req->setInputPids($inputPids);
+        $this->topsdk->req->setInputStr($inputStr);
+
+        $result = $this->topsdk->get_auth_data('6100c090503de93bc1d4f9859b6bf2d15908ddba73b3f1a450669192');
+
+        //var_dump($itemDesc);
+        if ( count($result) == 1){
+            //发布成功
+            var_dump($result['item']['iid']);
+        }else{
+            //发布失败
+            var_dump($result);
+        }
+    }
+    function get_product_items($productId)
+    {
+        $uri = $this->uri->uri_to_assoc(3);     
+        $limit = $this->config->item('pag_limit');
+        $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
+        if (array_key_exists('search', $uri))
+        {
+            $pagination_url = 'jad_goods/manage_product_items/search/'.$uri['search'].'/';
+            $config['uri_segment'] = 6; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
+            $search_query = str_replace('-',' ',urldecode($uri['search']));
+            
+            $this->db->select('*');
+            $this->db->from('info_product_item');
+            $this->db->where('product_id', $productId);
+            //$this->db->like('product_id', $search_query);
+            //$this->db->or_like('product_title', $search_query);     
+            $this->db->limit($limit, $offset);
+            $query = $this->db->get();			
+          
+            $this->db->select('*');
+            $this->db->from('info_product_item');
+            $this->db->where('product_id', $productId);
+            //$this->db->like('product_id', $search_query);
+            //$this->db->or_like('product_title', $search_query);     
+            $total_product_items = $this->db->get()->num_rows();
+            $this->data['product_items'] = $query->result_array();            
+        }
+        else
+        {
+            $pagination_url = 'jad_goods/manage_product_items/';
+			$search_query = FALSE;
+			$config['uri_segment'] = 4;
+	        $query = $this->db->get_where('info_product_item',array('product_id' => $productId), $limit, $offset);
+			$this->data['product_items'] = $query->result_array();		 
+	        $total_product_items = $this->db->get('info_product_item')->num_rows();
+        }
+        		// Create user record pagination.
+		$this->load->library('pagination');	
+		$config['base_url'] = base_url().'index.php/'.$pagination_url.'page/';
+		$config['total_rows'] = $total_product_items;
+		$config['per_page'] = $limit; 
+		$this->pagination->initialize($config); 
+		
+		// Make search query and pagination data available to view.
+		$this->data['search_query'] = $search_query; // Populates search input field in view.
+		$this->data['pagination']['links'] = $this->pagination->create_links();
+		$this->data['pagination']['total_product_items'] = $total_product_items;
     }
 	function get_goods_first()
 	{
@@ -304,7 +445,7 @@ class Jad_goods_model extends CI_Model {
 	 * 获取指定商品二级信息列表
 	 * 参数：货号
 	 */
-	function get_goods_second($goodsBarcode)
+    function get_goods_second($goodsBarcode)
 	{
 		// Get url for any search query or pagination position.
 		$uri = $this->uri->uri_to_assoc(4);     
@@ -384,10 +525,60 @@ class Jad_goods_model extends CI_Model {
 		return FALSE;
 	}	
  	/**
+	 * add_product_item
+	 * 增加指定货号下的商品sku信息,可一次加多条商品sku信息，但首先需要从提交的数据格式中把数据格式化
+	 * 参数：货号，商品颜色信息、商品sku信息
+	 */
+    function add_product_item($productId,$colourInfo,$skuInfo){
+        $product_item_desc = '';
+        $product_item_colour = '';
+        $product_item_img = '';
+        //存放颜色色卡图片URL的数组
+        $colourArr = explode(';',$colourInfo);
+        //存放SKU信息的数组
+        $skuArr = explode(';',$skuInfo);
+        //对sku信息进行遍历,每一条信息都需要插入数据库,并为每一条记录生成一个id号
+        for( $i = 0; $i < count($skuArr); $i++){
+            $product_item_property_alias = '';
+            $product_item_prop = '';
+            //随机的3位序列号+10位货号=商品编码
+            $productItemId = $this->get_new_product_item_num($productId);
+            $skuItemArr = explode(',',$skuArr[$i]);
+            //var_dump($skuItemArr);
+            for( $j = 0; $j < count($colourArr); $j++){
+                $colourItemArr = explode(',',$colourArr[$j]);
+                if( stripos($skuItemArr[0],$colourItemArr[0]) == 0 ){
+                    //获取色卡值、图片链接
+                    $product_item_colour = $colourItemArr[2];
+                    $product_item_img = $colourItemArr[3];
+                }
+            }
+            for( $k = 0; $k < count($skuItemArr)-1; $k++){
+                $propArr = explode(':',$skuItemArr[$k]);
+                $product_item_prop = $product_item_prop . $propArr[0] . ':' . $propArr[1] . ';';
+                $product_item_property_alias = $product_item_property_alias . $skuItemArr[$k] . ';';
+            }
+            $product_item_property_alias = substr($product_item_property_alias,0,strlen($product_item_property_alias) - 1 ); 
+            $product_item_prop = substr($product_item_prop,0,strlen($product_item_prop) - 1 ); 
+            $product_item_desc = $skuItemArr[count($skuItemArr)-1];
+            $profile_data = array(
+                'item_id' => $productItemId,
+                'product_id' => $productId,
+                'item_desc' => $product_item_desc,
+                'item_colour' => $product_item_colour,
+                'item_img_link' => $product_item_img,
+                'property_alias' => $product_item_property_alias ,
+                'props' => $product_item_prop 
+            );
+            $this->db->insert('info_product_item',$profile_data);
+        }
+    }
+ 	/**
 	 * add_goods_second
 	 * 增加指定货号下的商品二级信息
 	 * 参数：货号,短条码
 	 */
+    
 	function add_goods_second($series,$shortCode){
 		
 		$this->load->library('form_validation');
@@ -410,17 +601,15 @@ class Jad_goods_model extends CI_Model {
       	$randomTemp = $this->generate_ranstring();
       	$codeTemp = $shortCode.$randomTemp;
       }while( $this->db->get_where('info_goods_second',array('goods_barcode' => $codeTemp))->num_rows() == 1 );
-			
-			
-			$profile_data = array(
-			  'goods_code' => $series.$colour.$size,
-				'goods_seriesnum' => $series,
-				'goods_barcode' => $codeTemp,
-				'goods_shortcode' => $shortCode,
-				'goods_image_url' => $this->input->post('add_merch_image_url'),
-				'goods_s_desc' => $desc
-			);
-			$this->db->insert('info_goods_second',$profile_data);
+        $profile_data = array(
+          'goods_code' => $series.$colour.$size,
+            'goods_seriesnum' => $series,
+            'goods_barcode' => $codeTemp,
+            'goods_shortcode' => $shortCode,
+            'goods_image_url' => $this->input->post('add_merch_image_url'),
+            'goods_s_desc' => $desc
+        );
+        $this->db->insert('info_goods_second',$profile_data);
 		  redirect('jad_goods/manage_goods_second/'.$series);	
 	  }
 		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
@@ -471,6 +660,9 @@ class Jad_goods_model extends CI_Model {
     }  
     return $ranstring;  
   } 
+  function get_product_item_info_by_item_id($itemId){
+  	$this->data['productItem'] = $this->db->get_where('product_item_view',array('item_id'=> $itemId ))->row_array();
+  }
  	/**
 	 * get_itemcats_by_parent_id
 	 */
@@ -501,7 +693,7 @@ class Jad_goods_model extends CI_Model {
         );
         $this->load->library('topsdk', $topapi_config );
         $this->topsdk->autoload('ItempropsGetRequest');
-        $this->topsdk->req->setFields("pid,name,must,multi,prop_values,is_key_prop,is_enum_prop,parent_pid,is_input_prop,child_template");
+        $this->topsdk->req->setFields("pid,name,must,multi,prop_values,is_key_prop,is_sale_prop,is_enum_prop,parent_pid,is_input_prop,child_template");
         $this->topsdk->req->setCid($cId);
         $result = $this->topsdk->get_data();
         //注意：在该叶子类目下没有属性信息的时候，要对返回值进行判断，否则会引起错误；
