@@ -5,68 +5,61 @@
 <title>JaddiarERP</title>
 <?php $this->load->view('includes/jad_head'); ?>  
 </head>
-  <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
-  <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
-  <!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
-  <!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
-  <!--[if (gt IE 9)|!(IE)]><!--> 
-  <body class=""> 
-  <!--<![endif]-->
+<!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
+<!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
+<!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
+<!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> 
+<body class=""> 
+<!--<![endif]-->
 <?php $this->load->view('includes/jad_navbar'); ?>  
 <?php $this->load->view('includes/jad_sidebar'); ?>  
-    <div class="content">
-        <div class="header">
-            <div class="stats">
-                <p class="stat" id="p_title"><span class="number">Title:</span><?php echo $product['product_title']; ?></p>
-                <p class="stat" id="p_cid"><span class="number">CID:</span><?php echo $product['cid']; ?></p>
-                <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $product['product_id']; ?></p>
-</div>
-
-            <h1 class="page-title">新增商品信息</h1>
+<div class="content">
+    <div class="header">
+        <div class="stats">
+            <p class="stat" id="p_title"><span class="number">Title:</span><?php echo $product['product_title']; ?></p>
+            <p class="stat" id="p_cid"><span class="number">CID:</span><?php echo $product['cid']; ?></p>
+            <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $product['product_id']; ?></p>
         </div>
-        
-                <ul class="breadcrumb">
-            <li><a href="index.html">Home</a> <span class="divider">/</span></li>
-            <li><a href="<?php echo $base_url;?>index.php/jad_auth_admin/manage_user_accounts">商品列表</a> <span class="divider">/</span></li>
-            <li class="active">新增商品信息</li>
-        </ul>
 
-        <div class="container-fluid">
-            <div class="row-fluid">
-<?php $this->load->view('includes/jad_message'); ?>  
-    <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
-<div class="btn-toolbar">
-  <button type="submit" class="btn btn-primary" id="form_btn" /><i class="icon-plus"></i> 增加
-  </button>
-  <input type="hidden" name="add_product_item" value="1" />
-  <div class="btn-group">
-  </div>
-</div>
-
-<div class="well">
-    <div class="row-fluid">
-        <div class="span2"><b>销售属性</b></div>
-        <div class="span10">
-            <div class="row-fluid" id="enum-sale-props"></div>
-            <div class="row-fluid" id="enum-sale-additional"></div>
-        </div>
+        <h1 class="page-title">新增商品信息</h1>
     </div>
-</div>
-<input type="hidden" id ="t_colour_img" name ="t_colour_img"/>
-<input type="hidden" id ="t_sku" name ="t_sku"/>
-<input type="hidden" id ="product_id_hidden" name ="product_id_hidden" value="<?php echo $product['product_id'];?>" />
-<div class="well">
-<div class="row-fluid">
-    <div class="span2" ><b>商品图片URL</b></div>
-    <div class="span10" ><input = "text" id = "item_img_url" name = "item_img_url" class="span12" /></div>
-</div><br>              
-<div class="row-fluid">
-    <div class="span2" ><b>商品描述</b></div>
-    <div class="span10" id="item_desc"><textarea id="input11" name="input11"></textarea></div>
-</div>              
-</div>
-	  <?php echo form_close();?>
-<?php $this->load->view('includes/jad_footer'); ?>  
+    <ul class="breadcrumb">
+        <li><a href="index.html">Home</a> <span class="divider">/</span></li>
+        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_product_items/<?php echo $product['product_id']; ?>">商品列表</a> <span class="divider">/</span></li>
+        <li class="active">新增商品信息</li>
+    </ul>
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <?php $this->load->view('includes/jad_message'); ?>  
+            <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
+
+        <div class="row-fluid">
+            <div class="span2">
+                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  增加</button>
+                <input type="hidden" name="add_product_item" value="1" />
+            </div>
+            <div class="span1" id = "ajaxPic">
+            </div>
+        </div></br>
+
+            <div class="well">
+                <div class="row-fluid">
+                    <div class="span2"><b>销售属性</b></div>
+                    <div class="span10">
+                        <div class="row-fluid" id="enum-sale-props"></div>
+                        <div class="row-fluid" id="enum-sale-additional"></div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id ="t_colour_img" name ="t_colour_img"/>
+            <input type="hidden" id ="t_sku" name ="t_sku"/>
+            <input type="hidden" id ="product_id_hidden" name ="product_id_hidden" value="<?php echo $product['product_id'];?>" />
+
+            <?php echo form_close();?>
+            <?php $this->load->view('includes/jad_footer'); ?>  
             </div>
         </div>
     </div>
@@ -74,7 +67,7 @@
 <script>
 //提交获取属性链pid:vid，把sku表和颜色色卡图片表做成json字符串放入t_colour_img和t_sku中
 function checkAll(form){
-    //遍历颜色色卡图片表
+    //遍历颜色色卡图片表，如果色卡信息和图片链接没有值，则不允许提交
     var temp_tr = $("#table_color_img_url")[0].childNodes[1];
     var temp_str = '';
     for(var i=0;i<temp_tr.childNodes.length;i++){
@@ -82,9 +75,14 @@ function checkAll(form){
         temp_str = temp_str + temp_tr.childNodes[i].childNodes[0].innerHTML + ',';
         temp_str = temp_str + temp_tr.childNodes[i].childNodes[1].childNodes[0].value+ ',';
         temp_str = temp_str + temp_tr.childNodes[i].childNodes[2].childNodes[0].value+ ';';
+        if (temp_tr.childNodes[i].childNodes[1].childNodes[0].value.indexOf(',') >= 0 || temp_tr.childNodes[i].childNodes[1].childNodes[0].value.indexOf(';') >= 0 || temp_tr.childNodes[i].childNodes[2].childNodes[0].value.indexOf(',') >= 0 || temp_tr.childNodes[i].childNodes[2].childNodes[0].value.indexOf(';') >= 0 ){
+            alert('色卡或图片信息中不能出现逗号或分号');
+            return false;
+        }
     }
     temp_str = temp_str.substr(0,temp_str.length-1);
     $("#t_colour_img")[0].value = temp_str;
+
     //遍历sku表,需要引入一个二维数组来辅助
     var temp_th = $("#table_sku")[0].childNodes[1];
     var temp_th_str = '';
@@ -100,6 +98,10 @@ function checkAll(form){
         for(var j=0;j<temp_th.childNodes[i].childNodes.length;j++){
             if( j == temp_th.childNodes[i].childNodes.length - 1 ){
                 propSkuTempArr.push(temp_th.childNodes[i].childNodes[j].childNodes[0].value);
+                if (temp_th.childNodes[i].childNodes[j].childNodes[0].value.indexOf(',') >= 0 || temp_th.childNodes[i].childNodes[j].childNodes[0].value.indexOf(';') >= 0){
+                    alert('商品描述信息中不能出现逗号或分号');
+                    return false;
+                }
                 //alert(temp_th.childNodes[i].childNodes[j].childNodes[0].value);
                 temp_th_str = temp_th_str + temp_th.childNodes[i].childNodes[j].childNodes[0].value + ',';
             }else{
@@ -404,6 +406,11 @@ function setSku(){
 
 //创建销售属性的选择表单
 function createPropsForm(cid) {
+    //对提交按钮做出处理
+    $("#form_btn")[0].disabled = 'disabled';
+    var ajaxPic = document.createElement('img');
+    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
+    $("#ajaxPic")[0].appendChild(ajaxPic);
     //获取该cid下的销售属性
     $.ajax({
         type:"post",
@@ -411,7 +418,11 @@ function createPropsForm(cid) {
         url: "<?php echo base_url();?>index.php/jad_goods/get_itemprops_by_cid",
         success: function(data){
             var props = eval('('+data+')');
-            if(props=='') return false;
+            if(props=='') {
+                $("#form_btn")[0].disabled = '';
+                $("#ajaxPic")[0].innerHTML = '';
+                return false;
+            }
             props = props.item_props.item_prop;
             var i;
             for (i in props) {
@@ -501,7 +512,8 @@ function createPropsForm(cid) {
                     $("#enum-sale-props")[0].appendChild(propDiv);
                 }
             }
-            
+            $("#form_btn")[0].disabled = '';
+            $("#ajaxPic")[0].innerHTML = '';
         },
         error: function(){
             alert("获取数据失败，请与网站管理员联系！");
@@ -509,8 +521,6 @@ function createPropsForm(cid) {
     }); 
 }
 $(document).ready(function(){
-    //页面启动的时候，就去调用增加类目选择下拉菜单的方法，只不过传入参数为0，即读取无父子节点的类节点
-    //$("#input11").cleditor(); 
     createPropsForm(<?php echo $product['cid']; ?>);
     /*
 $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){

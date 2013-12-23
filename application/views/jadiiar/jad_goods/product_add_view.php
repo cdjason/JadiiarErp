@@ -6,168 +6,134 @@
 <?php $this->load->view('includes/jad_head'); ?>  
 <link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>CLEditor1_4_3/jquery.cleditor.css">
 </head>
-  <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
-  <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
-  <!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
-  <!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
-  <!--[if (gt IE 9)|!(IE)]><!--> 
-  <body class=""> 
-  <!--<![endif]-->
+<!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
+<!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
+<!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
+<!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> 
+<body class=""> 
+<!--<![endif]-->
 <?php $this->load->view('includes/jad_navbar'); ?>  
 <?php $this->load->view('includes/jad_sidebar'); ?>  
-    <div class="content">
-        <div class="header">
-            <div class="stats">
-                <p class="stat" id="p_cid"><span class="number">CID:</span></p>
-                <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $productId; ?></p>
-</div>
-
-            <h1 class="page-title">新增产品信息</h1>
+<div class="content">
+    <div class="header">
+        <div class="stats">
+            <p class="stat" id="p_cid"><span class="number">CID:</span></p>
+            <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $productId; ?></p>
         </div>
-        
-                <ul class="breadcrumb">
-            <li><a href="index.html">Home</a> <span class="divider">/</span></li>
-            <li><a href="<?php echo $base_url;?>index.php/jad_auth_admin/manage_user_accounts">产品列表</a> <span class="divider">/</span></li>
-            <li class="active">新增产品信息</li>
-        </ul>
+        <h1 class="page-title">新增产品信息</h1>
+    </div>
+    <ul class="breadcrumb">
+        <li><a href="index.html">Home</a> <span class="divider">/</span></li>
+        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_products">产品列表</a> <span class="divider">/</span></li>
+        <li class="active">新增产品信息</li>
+    </ul>
 
-        <div class="container-fluid">
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <?php $this->load->view('includes/jad_message'); ?>  
+            <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
             <div class="row-fluid">
-<?php $this->load->view('includes/jad_message'); ?>  
-    <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
-<div class="btn-toolbar">
-  <button type="submit" class="btn btn-primary" id="form_btn" /><i class="icon-plus"></i> 增加
-  </button>
-  <input type="hidden" name="add_goods_first" value="1" />
-  <div class="btn-group">
-  </div>
-</div>
+                <div class="span2">
+                    <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  增加</button>
+                    <input type="hidden" name="add_goods_first" value="1" />
+                </div>
+                <div class="span1" id = "ajaxPic">
+                </div>
+            </div></br>
 
-<div class="well">
-  <div class="row-fluid">
-     <div class="span2" id="parentDiv"><b>产品类目</b></div>
-     <div class="span10" id="parentCidDiv"></div>
-  </div><br><br><br>
-  <div class="row-fluid">
-     <div class="span2"><b>关键属性</b></div>
-     <div class="span10" id="enum-one-props"></div>
-  </div>
-</div>
-
-<div class="well">
-  <div class="row-fluid">
-     <div class="span2" ><b>产品标题</b></div>
-     <div class="span10" ><input = "text" id = "product_title" name = "product_title" class="input-large" /></div>
-  </div><br>              
-  <div class="row-fluid">
-     <div class="span2" ><b>产品图片URL</b></div>
-     <div class="span10" ><input = "text" id = "product_img_url" name = "product_img_url" class="input-large" /></div>
-  </div>     <br>         
-  <div class="row-fluid">
-     <div class="span2" ><b>产品品牌</b></div>
-     <div class="span10" ><input = "text" id = "product_brand" name = "product_brand" class="input-large" /></div>
-  </div>  <br>            
-  <div class="row-fluid">
-     <div class="span2" ><b>产品描述</b></div>
-     <div class="span10" ><input = "text" id = "product_desc" name = "product_desc" class="input-large" /></div>
-  </div>              
-</div>
-</div>
-</div>
-</div>
-
-<input type="hidden" name="cid" id="cid"/>
-<input type="hidden" name="props" id="props" />
-<input type="hidden" name="input_str" id="input_str"/>
-<input type="hidden" name="input_pids" id="input_pids"/>
-<input type="hidden" name="product_hidd_id" id="product_hidd_id" value="<?php echo $productId; ?>"/>
-	  <?php echo form_close();?>
-<?php $this->load->view('includes/jad_footer'); ?>  
+            <div class="well">
+                <div class="row-fluid">
+                    <div class="span2" id="parentDiv"><b>产品类目</b></div>
+                    <div class="span10" id="parentCidDiv"></div>
+                </div><br><br><br>
+                <div class="row-fluid">
+                    <div class="span2"><b>关键属性</b></div>
+                    <div class="span10" id="enum-one-props"></div>
+                </div>
             </div>
+
+            <div class="well">
+                <div class="row-fluid">
+                    <div class="span2" ><b>产品标题</b></div>
+                    <div class="span10" ><input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" /></div>
+                </div><br>              
+                <div class="row-fluid">
+                    <div class="span2" ><b>店铺类别</b></div>
+                    <div class="span10" id = 'seller-cats' ></div>
+                </div>  <br>            
+                <div class="row-fluid">
+                    <div class="span2" ><b>产品图片URL</b></div>
+                    <div class="span10" ><input = "text" id = "product_img_url" name = "product_img_url" class="span12" /></div>
+                </div>     <br>         
+                <div class="row-fluid">
+                    <div class="span2" ><b>产品描述</b></div>
+                    <div class="span10" ><input = "text" id = "product_desc" name = "product_desc" class="span12" placeholder="不要出现标点符号" /></div>
+                </div>              
+            </div>
+            <input type="hidden" name="cid" id="cid"/>
+            <input type="hidden" name="seller_cats" id="seller_cats"/>
+            <input type="hidden" name="props" id="props" />
+            <input type="hidden" name="input_str" id="input_str"/>
+            <input type="hidden" name="input_pids" id="input_pids"/>
+            <input type="hidden" name="product_hidd_id" id="product_hidd_id" value="<?php echo $productId; ?>"/>
+            <?php echo form_close();?>
+            <?php $this->load->view('includes/jad_footer'); ?>  
         </div>
     </div>
+</div>
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
-//及时响应文本输入框的内容
-function submitDate(o){
-    alert(34);
-    //IE
-    /*
-    if(window.attachEvent){
-      $("#sendMessageText").get(0).attachEvent("onpropertychange",function (o){
-         if(o.srcElement.value) $( "#send_button" )[0].disabled=false;
-         else $( "#send_button" )[0].disabled=true;
-      });
-      //非IE
-    }else{
-      $("#sendMessageText").get(0).addEventListener("input",function(o){
-        if(o.srcElement.value) $( "#send_button" )[0].disabled=false;
-        else $( "#send_button" )[0].disabled=true;
-      },false);
-}*/
-}
-//递归
-function getInputStr(inputId) {
-//alert(inputId);
-/*
-	for (var i in props) {
-		if ('0' != props[i]['parent_vid']) {
-			if (inputId == props[i]['pid']) {
-				inputStr = props[i]['name'] + ';' + inputStr;
-				pushArr.push('pid_' + inputId);
-
-				for (var j in propvalues) {
-					if (props[i]['parent_vid'] == propvalues[j]['vid']) {
-						inputStr = propvalues[j]['name_alias'] + ';' + inputStr;
-					}
-				}
-				getInputStr(props[i]['parent_pid']);
-			}
-		} else {
-			if (inputId == props[i]['pid']) {
-				pushArr.push('pid_' + inputId);
-				pushPidsArr.push(inputId);
-			}
-		}
-    }
-*/
-}
-
 //提交获取属性链pid:vid
 function checkAll(form){
+    if( $("#cid")[0].value == ''){
+        alert('尚未选择商品叶子类目，请选择!');
+        return false;
+    }
     var formElements = form.elements;
     var propStr = '';
     var inputStr = ''; 
     var inputPidsStr = ''; 
-    //遍历关键属性DIV下的各个属性div
+    var sellerCats = '';
+    //遍历关键属性DIV下的各个属性div，除了取值以外，还要判断是否存在那种未选择、未填写的情况
     var prop_divs = $("#enum-one-props")[0];
 	for (var j=0;j<prop_divs.childNodes.length;j++) {
-        //若存在LAEL = input,那么就把pid与vid放入input pid与str中
+        //若存在input,那么就把pid与vid放入input pid与str中
         var prop_div = prop_divs.childNodes[j];
-        for (var k=0;k<prop_div.childNodes.length;k++) {
-            if(prop_div.childNodes[k].nodeName == 'INPUT'){
-                //说明为输入性的属性
-                inputStr += ',' + prop_div.childNodes[k].value;
-                inputPidsStr += ',' + prop_divs.childNodes[j].id.substr(4,prop_divs.childNodes[j].id.length-8);
-                //alert(prop_div.childNodes[k].outerHTML);
+        if(prop_div.childNodes[1].childNodes[0].nodeName == 'INPUT'){
+            if(prop_div.childNodes[1].childNodes[0].value == ''){
+                alert('关键属性不能有未输入的项');
+                return false;
             }
-            if(prop_div.childNodes[k].nodeName == 'SELECT'){
-                //如果选择的是自定义，则存在input
-                if(prop_div.childNodes[k].value == prop_div.childNodes[k].id.substr(4,prop_div.childNodes[k].id.length-4)){
-                    inputStr += ',' + prop_divs.childNodes[j].childNodes[2].childNodes[0].value;
-                    inputPidsStr += ',' + prop_div.childNodes[k].value;
-                }else{
-                    propStr +=  prop_div.childNodes[k].value + ';';
-                }
-
+            inputStr += ',' + prop_div.childNodes[1].childNodes[0].value;
+            inputPidsStr += ',' + prop_div.childNodes[1].childNodes[0].id.substr(6);
+        }
+        if(prop_div.childNodes[1].childNodes[0].nodeName == 'SELECT'){
+            if(prop_div.childNodes[1].childNodes[0].value == ''){
+                alert('关键属性不能有未选择的项');
+                return false;
+            }
+            if(prop_div.childNodes[1].childNodes[0].value.split(':').length === 1){
+            }else{
+                propStr +=  prop_div.childNodes[1].childNodes[0].value + ';';
             }
         }
 	}
+
+    //对店铺类目的选择情况进行处理，可以选，也可以不选
+    for ( var i=0;i<$("#seller-cats")[0].childNodes.length;i++){
+        if ($("#seller-cats")[0].childNodes[i].value != ''){
+            sellerCats = sellerCats + ',' +$("#seller-cats")[0].childNodes[i].value;
+        }
+    }
     inputStr = inputStr.substr(1);
     inputPidsStr = inputPidsStr.substr(1);
     $("#props")[0].value = propStr; 
     $("#input_str")[0].value = inputStr; 
     $("#input_pids")[0].value = inputPidsStr; 
+    if (sellerCats != ''){
+        $("#seller_cats")[0].value = sellerCats.substr(1); 
+    }
 }
 //对于关键属性中的子属性进行展示
 function parentPropList(o){
@@ -185,43 +151,41 @@ function parentPropList(o){
 			txt.type = 'text';
 			txt.name = 'input_' + pid;
 			txt.id = 'input_' + pid;
+            txt.setAttribute('class', 'span6');
 			txt.value = '';
             //添加作为附加子属性的元素
-            //alert(o.value);
-
             var propDiv = document.createElement('div');
-            propDiv.id = 'pid_' + o.id + '_div';
+            propDiv.id =  o.id + '_subDiv';
             propDiv.setAttribute('class', 'row-fluid');
 
             var propDivName = document.createElement('div');
-            propDivName.id = 'pid_' + o.id + '_subName';
-            propDivName.setAttribute('class', 'span2 offset2');
+            propDivName.id =  o.id + '_subName';
+            propDivName.setAttribute('class', 'span2 offset1');
 
             var propDivValue = document.createElement('div');
-            propDivValue.id = 'pid_' + o.id + '_subValue';
-            propDivValue.setAttribute('class', 'span8');
+            propDivValue.id =  o.id + '_subValue';
+            propDivValue.setAttribute('class', 'span9');
 
             propDivValue.appendChild(txt);
             propDivName.appendChild(document.createTextNode("自定义："));
 
             propDiv.appendChild(propDivName);
             propDiv.appendChild(propDivValue);
-            $("#enum-one-props")[0].appendChild(propDiv);
-
-			//document.getElementById('pid_' + pid + '_span').innerHTML = '';
-			//document.getElementById('pid_' + pid + '_span').appendChild(txt);
-            //貌似在修改颜色或者尺码时用的
-            /*
-			if (2 == pidVidArr.length) {
-				childName = pidVidArr[1];
-                //失去焦点时触发事件
-				txt.onblur = function(){childTemplate(childName, pid);};
-            }
-             */
+            insertAfter(propDiv,o.parentNode.parentNode);
         }else {
 			var pid = pidVidArr[0];
 			var vid = pidVidArr[1];
-            document.getElementById('pid_' + pid + '_span').innerHTML = '';
+            //需要把之前显示该属性的子属性的HTML元素给去掉
+            if (document.getElementById('pid_' + pid + '_subDiv') != null){
+                document.getElementById('pid_' + pid + '_subDiv').outerHTML = '';
+            }
+            
+            //对提交按钮做出处理
+            $("#form_btn")[0].disabled = 'disabled';
+            var ajaxPic = document.createElement('img');
+            ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
+            $("#ajaxPic")[0].appendChild(ajaxPic);
+            
             //获取在当前叶子cid和pid的下面，以pid为父亲属性的子属性数据
             $.ajax({
                 type:"post",
@@ -229,7 +193,11 @@ function parentPropList(o){
                 url: "<?php echo base_url();?>index.php/jad_goods/get_child_itemprops",
                 success: function(prop_data){
                     var prop_data = eval('('+prop_data+')');
-                    if(prop_data=='') return false;
+                    if(prop_data==''){ 
+                        $("#form_btn")[0].disabled = '';
+                        $("#ajaxPic")[0].innerHTML = '';
+                        return false;
+                    }
                     prop_data = prop_data.item_props.item_prop;
                     var i;
                     for (i in prop_data) {
@@ -237,42 +205,53 @@ function parentPropList(o){
                             var sel = document.createElement('SELECT');
                             sel.setAttribute('name', 'pid_' + prop_data[i]['pid']);
                             sel.setAttribute('id', 'pid_' + prop_data[i]['pid']);
+                            sel.setAttribute('class', 'span6');
                             var op = document.createElement('OPTION');
                             op.setAttribute('value', '');
                             op.innerHTML = '--请选择--';
                             sel.appendChild(op);
-                            $.ajax({
-                                type:"post",
-                                data: "cId="+$("#cid").val()+"&pId=" + prop_data[i].pid,
-                                url: "<?php echo base_url();?>index.php/jad_goods/get_propvalues",
-                                async: false,
-                                success: function(propvalue_data){
-                                   var propvalues = eval('(' + propvalue_data + ')');
-                                   if(propvalues!=''){
-                                       propvalues = propvalues.prop_values.prop_value;
-                                       //alert(propvalues[0].name_alias); 
-                                       var j;
-                                       for(j in propvalues){
-                                       op = document.createElement('OPTION');
-                                       op.setAttribute('value', propvalues[j]['pid'] + ':' + propvalues[j]['vid']);
-                                       op.innerHTML = propvalues[j]['name_alias'];
-                                       sel.appendChild(op);
-                                       }
-                                   } 
-                                },          
-                                error: function(){
-                                    alert("获取数据失败，请与网站管理员联系！");
-                                }
-                            }); 
+                            //alert(prop_data[i].prop_values.prop_value[0]['name']);
+                            var propvalues = prop_data[i].prop_values.prop_value;
+                            if(propvalues!=''){
+                               //alert(propvalues[0].name_alias); 
+                               var j;
+                               for(j in propvalues){
+                               op = document.createElement('OPTION');
+                               op.setAttribute('value', prop_data[i]['pid'] + ':' + propvalues[j]['vid']);
+                               op.innerHTML = propvalues[j]['name'];
+                               sel.appendChild(op);
+                               }
+                            }
                             if (prop_data[i]['is_input_prop']) {
                                 op = document.createElement('OPTION');
                                 op.setAttribute('value', prop_data[i].pid);
                                 op.innerHTML = '自定义';
                                 sel.appendChild(op);
                             }
-                                document.getElementById('pid_' + prop_data[i].parent_pid + '_span').appendChild(sel);
+                            //添加作为附加子属性的元素
+                            var propDiv = document.createElement('div');
+                            propDiv.id = 'pid_' + pid + '_subDiv';
+                            propDiv.setAttribute('class', 'row-fluid');
+
+                            var propDivName = document.createElement('div');
+                            propDivName.id =  pid + '_subName';
+                            propDivName.setAttribute('class', 'span2 offset1');
+
+                            var propDivValue = document.createElement('div');
+                            propDivValue.id =  pid + '_subValue';
+                            propDivValue.setAttribute('class', 'span9');
+
+                            propDivValue.appendChild(sel);
+                            propDivName.appendChild(document.createTextNode(prop_data[i]['name']));
+
+                            propDiv.appendChild(propDivName);
+                            propDiv.appendChild(propDivValue);
+
+                            insertAfter(propDiv,o.parentNode.parentNode);
                           }
                         }
+                    $("#form_btn")[0].disabled = '';
+                    $("#ajaxPic")[0].innerHTML = '';
                 },          
                 error: function(){
                     alert("获取数据失败，请与网站管理员联系！");
@@ -282,36 +261,26 @@ function parentPropList(o){
         
     }
     
-}
-function childTemplate (childName, pid) {
-
-    /*
-	if ('' == document.getElementById('input_' + pid).value) {
-		var txt = document.createElement('input');
-		txt.type = 'text';
-		txt.name = 'input_' + pid;
-		txt.id = 'input_' + pid;
-		txt.value = '';
-		document.getElementById('pid_' + pid + '_span').innerHTML = '';
-		document.getElementById('pid_' + pid + '_span').appendChild(txt);
-		txt.onblur = function(){childTemplate(childName, pid);};
-	} else if (!document.getElementById(childName)) {
-		var txt = document.createElement('input');
-		txt.type = 'text';
-		txt.name = childName;
-		txt.id = childName;
-		txt.value = '';
-
-		var childTempSpan = document.createElement('span');
-		childTempSpan.id = 'childTemp_' + pid;
-		childTempSpan.innerHTML = '　' + childName + '：';
-		document.getElementById('pid_' + pid + '_span').appendChild(childTempSpan);
-		document.getElementById('pid_' + pid + '_span').appendChild(txt);
-}*/
+} 
+function insertAfter(newElement,targetElement) {
+    var parent = targetElement.parentNode;
+    if (parent.lastChild == targetElement) {
+        // 如果最后的节点是目标元素，则直接添加。因为默认是最后
+        parent.appendChild(newElement);
+    } else {
+        parent.insertBefore(newElement,targetElement.nextSibling);
+        //如果不是，则插入在目标元素的下一个兄弟节点 的前面。也就是目标元素的后面。
+    }
 }
 
 //创建关键属性的选择表单
 function createPropsForm(cid) {
+    //对提交按钮做出处理
+    $("#form_btn")[0].disabled = 'disabled';
+    var ajaxPic = document.createElement('img');
+    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
+    $("#ajaxPic")[0].appendChild(ajaxPic);
+
     //获取该cid下的关键属性
     $.ajax({
         type:"post",
@@ -319,7 +288,11 @@ function createPropsForm(cid) {
         url: "<?php echo base_url();?>index.php/jad_goods/get_itemprops_by_cid",
         success: function(data){
             var props = eval('('+data+')');
-            if(props=='') return false;
+            if(props==''){ 
+                $("#form_btn")[0].disabled = '';
+                $("#ajaxPic")[0].innerHTML = '';
+                return false;
+            }
             props = props.item_props.item_prop;
             var i;
             for (i in props) {
@@ -331,7 +304,7 @@ function createPropsForm(cid) {
                         var sel = document.createElement('SELECT');
                         sel.setAttribute('name', 'pid_' + props[i].pid);
                         sel.setAttribute('id', 'pid_' + props[i].pid);
-                        sel.setAttribute('class', 'input-xlarge');
+                        sel.setAttribute('class', 'span6');
 
                         var op = document.createElement('OPTION');
                         op.setAttribute('value', '');
@@ -349,10 +322,10 @@ function createPropsForm(cid) {
                                    propvalues = propvalues.prop_values.prop_value;
                                    var j;
                                    for(j in propvalues){
-                                   op = document.createElement('OPTION');
-                                   op.setAttribute('value', propvalues[j].pid + ':' + propvalues[j].vid);
-                                   op.innerHTML = propvalues[j].name_alias;
-                                   sel.appendChild(op);
+                                       op = document.createElement('OPTION');
+                                       op.setAttribute('value', propvalues[j].pid + ':' + propvalues[j].vid);
+                                       op.innerHTML = propvalues[j].name_alias;
+                                       sel.appendChild(op);
                                    }
                                } 
                             },          
@@ -401,6 +374,7 @@ function createPropsForm(cid) {
                         txt.type = 'text';
                         txt.name = 'input_' + props[i].pid;
                         txt.id = 'input_' + props[i].pid;
+                        txt.setAttribute('class', 'span6');
                         txt.value = '';
                         //txt.onblur = 'javascript:submitDate(this);';
                         //当为货号或者款式input的时候，需要复制页面上的product_hidd_id,且不能编辑
@@ -430,12 +404,42 @@ function createPropsForm(cid) {
                     }
                 }
             }
-            
+            $("#form_btn")[0].disabled = '';
+            $("#ajaxPic")[0].innerHTML = '';
         },
         error: function(){
             alert("获取数据失败，请与网站管理员联系！");
         }
     }); 
+}
+
+function childSellerCidList(o, c_id){
+    //当选择之后，当前元素节点之后的所有兄弟节点需要删除
+    var oJu = $(o).next();
+    while(oJu[0]!=undefined){
+        var temp = oJu[0];
+        oJu = oJu.next();
+        temp.outerHTML='';
+    }
+    var cid = o.value;
+
+    //当选择"请选择"的时候，考虑一下怎么进行处理一下；
+    if (cid==''){
+        return false;
+    }
+
+    createSellerCidSelect(cid)
+    //var is_parent=o.options[o.selectedIndex].is_parent;
+    //if(is_parent === true || is_parent == 'true')
+    //{
+        //非叶子类目，则继续以该cid为父亲id添加子类目下拉菜单
+        //createSellerCidSelect(c_id)
+    //}
+    //else
+    //{
+        //叶子类目，则显示该cid
+        //createPropsForm(cid);
+    //}
 }
 
 //响应类目选择的动作
@@ -463,9 +467,6 @@ function childCidList(o, p_id)
     else
     {
         //叶子类目，则显示该cid
-        //$("#parentDiv")[0].appendChild(document.createElement("br"));
-        //$("#parentDiv")[0].appendChild(document.createTextNode("cid"+cid));
-        //$('#product_cid')[0].getElementsByTagName('label')[0].innerHTML = "商品类目   cid:" + cid;
         $("#cid")[0].value=cid;
         var i=1;
         while($("#p_cid")[0].childNodes[i]!=undefined){
@@ -474,12 +475,72 @@ function childCidList(o, p_id)
         }
         $("#p_cid")[0].appendChild(document.createTextNode(cid));
         createPropsForm(cid);
+    }
 }
+
+//创建店铺类目选择的下拉菜单，参数为parent_id
+function createSellerCidSelect(c_id) 
+{
+    //对提交按钮做出处理
+    $("#ajaxPic")[0].innerHTML = '';//防止页面初始化的时候，出现重复的gif图
+    $("#form_btn")[0].disabled = 'disabled';
+    var ajaxPic = document.createElement('img');
+    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
+    $("#ajaxPic")[0].appendChild(ajaxPic);
+
+     //调用api读取相应的数据
+     $.ajax({
+         type:"post",
+         url: "<?php echo base_url();?>index.php/jad_goods/get_seller_cats_by_nickname",
+         success: function(data){
+             var jsObject = eval('('+data+')');
+             jsObject = jsObject.seller_cats.seller_cat;
+             //alert(sellerCats.length);
+
+             var sel = document.createElement('SELECT');
+             sel.setAttribute('name', 'cat_' + c_id);
+             sel.setAttribute('id', 'cat_' + c_id);
+             sel.setAttribute('class', 'input-xlarge');
+             var op = document.createElement('OPTION');
+             op.setAttribute('value', '');
+             op.innerHTML = '--请选择--';
+             sel.appendChild(op);
+
+             var i;
+             var j=0;
+             for (i in jsObject) {
+                if (jsObject[i].parent_cid == c_id ) {
+                    j++;
+                    var option = document.createElement('OPTION');
+                    option.innerHTML = jsObject[i].name;
+                    option.setAttribute('value', jsObject[i].cid);
+                    option.parent_id=jsObject[i].parent_cid;//判断是否是子类目
+                    sel.appendChild(option);
+                }
+             }
+             sel.onchange = function(){childSellerCidList(this, c_id);};
+             if (j != 0){
+                 $("#seller-cats")[0].appendChild(sel);
+             }
+            $("#form_btn")[0].disabled = '';
+            $("#ajaxPic")[0].innerHTML = '';
+         
+        },
+        error: function(){
+        alert("获取数据失败，请与网站管理员联系！");
+        }
+     }); 
 }
 
 //创建类目选择的下拉菜单，参数为parent_id
-function createCidSelect(parent_id) 
-{
+function createCidSelect(parent_id) {
+
+    //对提交按钮做出处理
+    $("#form_btn")[0].disabled = 'disabled';
+    var ajaxPic = document.createElement('img');
+    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
+    $("#ajaxPic")[0].appendChild(ajaxPic);
+    
   //调用api读取相应的数据
   $.ajax({
      type:"post",
@@ -508,9 +569,11 @@ function createCidSelect(parent_id)
 			}
 		 }
          //在第二个label之前创建下拉菜单，即"关键属性"的label之前
-         //$('#product_cid')[0].insertBefore(sel,$('#product_cid')[0].getElementsByTagName('label')[1]);
-         $("#parentCidDiv")[0].appendChild(sel);
          sel.onchange = function(){childCidList(this, parent_id);};
+         $("#parentCidDiv")[0].appendChild(sel);
+
+         $("#form_btn")[0].disabled = '';
+         $("#ajaxPic")[0].innerHTML = '';
      },
      error: function(){
          alert("获取数据失败，请与网站管理员联系！");
@@ -521,6 +584,10 @@ function createCidSelect(parent_id)
 $(document).ready(function(){
     //页面启动的时候，就去调用增加类目选择下拉菜单的方法，只不过传入参数为0，即读取无父子节点的类节点
     createCidSelect(0);
+    //页面启动的时候，就去调用增加店铺类目选择下拉菜单的方法，只不过传入参数为0，即读取一级店铺分类
+    createSellerCidSelect(0);
+    
+
     /*
 $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
   alert(json.childCategoryList.categoryPropList);
@@ -538,7 +605,7 @@ $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
 
 });
 </script>  
-  </body>
+</body>
 </html>
 
 

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>产品信息维护</title>
 <?php $this->load->view('includes/jad_head'); ?>  
+<link rel="stylesheet" href="<?php echo $includes_dir;?>css/jquery.fancybox-1.3.4.css">
 </head>
 <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
 <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
@@ -33,7 +34,7 @@
 </div>
 <?php echo form_open(current_url());?>
 <div class="input-append">
-<input type="text" class="span2 search-query" id="search" placeholder="货号or产品标题" name="search_query" value="<?php echo $search_query;?>">
+<input type="text" class="span4 search-query" id="search" placeholder="货号or产品标题" name="search_query" value="<?php echo $search_query;?>">
 <input type="submit" name="search_product" class="btn" value="Search" />
 <a class="btn" href="<?php echo $base_url; ?>index.php/jad_goods/manage_product">重设</a>
 </div>
@@ -54,7 +55,7 @@
                 <tbody>
 						<?php foreach ($product as $product_item) { ?>
                     <tr>
-                        <td><a id="example6" href = "<?php echo $product_item['product_img_url'];?>">
+                        <td><a id="fancy_box" href = "<?php echo $product_item['product_img_url'];?>">
                             <img class="img-rounded" title="<?php echo $product_item['product_desc'];?>" 
                                  src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($product_item['product_img_url']);?>"  >
                         </a></td>
@@ -106,15 +107,13 @@
 <script src="<?php echo $includes_dir;?>js/jquery.fancybox-1.3.4.pack.js"></script> 
 <script>
 $(document).ready(function(){
-    /*在bootstrap下这部分代码出了问题，暂时先不管了
-    $("a#example6").fancybox({
+    $("a#fancy_box").fancybox({
         'titlePosition'		: 'outside',
         'overlayColor'		: '#000',
         'overlayOpacity'	: 0.9
-});
-     */
+    });
     $('#del_btn').confirm({
-		'title' : '删除权限',
+		'title' : '删除产品信息',
 		'message' : '您确定要删除产品信息吗,请谨慎操作？!',        
 		'action' : function() {
 			$('#product_list_form').submit();

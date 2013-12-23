@@ -1,5 +1,12 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+$config['topapi_config'] = array(
+    'app_key'=>'21669164', 
+    'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
+);
+
+$config['topapi_session_key'] = '6101d18f3da19c14be3d0a477b1ac6f3a6e1094bb4d51b2450669192';
+$config['nick_name'] = 'jadiiar';
 //此处定义了分页的条目数量
 $config['pag_limit'] = 5;
 

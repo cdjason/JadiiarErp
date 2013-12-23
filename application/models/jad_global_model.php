@@ -362,12 +362,31 @@ class Jad_global_model extends CI_Model {
    	 }
    }
   /**
-	 * get_url_sub_image_by_formal()
-	 * 根据piwigo原图的地址转换为缩略图的地址
-	 * 参数：用户ID 
-	 */ 
-	 function get_url_sub_image_by_formal($fUrl){
-	 	$subUrl =  substr($fUrl,0,strpos($fUrl,'-me.')).'-2s.jpg';
+	* get_url_sub_image_by_formal()
+	* 根据piwigo原图的地址转换为缩略图的地址
+    * 因为piwigo中的图片路径可能有多种形式，上传原图或者压缩图都有可能
+    * 参数：上传的piwigo中的图片地址
+    * 返回：piwigo中的最小图片(2s图片地址) 
+	*/ 
+	function get_url_sub_image_by_formal($fUrl){
+        //判断链接是否来自原图还是来自压缩图
+        $img_name = '';
+        $img_type = '';
+
+        $img_name = substr($fUrl,strrpos($fUrl,'upload') + 7 , 34 );
+        
+        if ( strrpos($fUrl,'_data/i') != false ){
+            //来自压缩图
+            $img_type = substr($fUrl,strrpos($fUrl,'upload') + 45);
+        }else if ( strrpos($fUrl,'i.php?') != false ){
+            //来自压缩图
+            $img_type = substr($fUrl,strrpos($fUrl,'upload') + 45);
+        }else{
+            //来自原图
+            $img_type = substr($fUrl,strrpos($fUrl,'upload') + 42 );
+        }
+
+	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-2s'.'.'.$img_type ;
 	 	return $subUrl;
 	 }
   /**

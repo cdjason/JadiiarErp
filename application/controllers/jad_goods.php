@@ -22,7 +22,6 @@ class Jad_goods extends CI_Controller {
 		    $this->load->library('session');
  		    $this->load->helper('url');
  		    $this->load->helper('form');
- 		 
 		    $this->config->load('jadiiar_conf');
         
   		  // IMPORTANT! This global must be defined BEFORE the flexi auth library is loaded! 
@@ -47,8 +46,8 @@ class Jad_goods extends CI_Controller {
 	// 商品一级信息维护
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
 	/**
-	 * add_goods_first
-	 * 新增商品一级信息
+	 * add_product
+	 * 新增产品信息
 	 */ 
 	function add_product(){ 
 		if ($this->input->post('add_goods_first'))
@@ -56,12 +55,7 @@ class Jad_goods extends CI_Controller {
 			$this->load->model('jad_goods_model');
 			$this->jad_goods_model->add_product();
 		}
-        //从TOP API里面获取类目信息
-        $topapi_config = array(
-            'app_key'=>'21669164', 
-            'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
-        );
-        $this->load->library('topsdk', $topapi_config );
+        $this->load->library('topsdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItemcatsGetRequest');
         $this->topsdk->req->setFields("cid,parent_cid,name,is_parent");
         $this->topsdk->req->setParentCid(0);
@@ -73,6 +67,12 @@ class Jad_goods extends CI_Controller {
         $this->data['productId'] = $this->jad_goods_model->get_new_series_num();
 
 		$this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];		
+
+        // 对系统报错信息（p标签包裹的数据）进行重新处理；        
+        if (!empty($this->data['message']))
+        {
+            $this->data['alert_message'] = $this->jad_global_model->get_alert_message($this->data['message']);   
+        } 
 		$this->load->view('jadiiar/jad_goods/product_add_view',$this->data);
 	}	 	  
  	/**
@@ -226,6 +226,15 @@ class Jad_goods extends CI_Controller {
               $this->session->set_flashdata('message', '<p class="error_msg">You do not have privileges to view merchandises info.</p>');
               redirect('jad_auth');
         }
+        if ($this->input->post('search_item') && $this->input->post('search_query')) 
+        {
+            $search_query = str_replace(' ','-',$this->input->post('search_query'));
+            redirect('jad_goods/manage_product_items/'.$productId.'/search_item/'.$search_query.'/page/');
+        }
+        else if ($this->input->post('delete_item')) 
+        {
+            $this->jad_goods_model->update_item();
+        }
         // 获取商品详细信息
         $this->data['productId'] = $productId;
         // 判断此商品货号是否过期
@@ -306,6 +315,14 @@ class Jad_goods extends CI_Controller {
 	  $this->load->view('jadiiar/jad_goods/merch_details_view', $this->data);		
     }
 
+ 	/**
+     * ajax调用接口，通过店铺昵称,调用TOP API获取店铺类目信息
+     * get_seller_cats_by_nickname
+ 	 */
+    function get_seller_cats_by_nickname(){
+		$this->load->model('jad_goods_model');
+        $this->jad_goods_model->get_seller_cats_by_nickname();
+    }
  	/**
      * ajax调用接口，通过父节点cid,调用TOP API获取子类信息
      * get_itemcats_by_parent_id
