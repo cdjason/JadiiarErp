@@ -215,6 +215,9 @@ class Jad_goods_model extends CI_Model {
         $itemLoState = '重庆';
         $itemLoCity = '重庆';
         $cId = $this->input->post('cid');
+        
+        //图片在远程piwigo上的地址
+        $item_remote_url = $this->input->post('img_remote_url');
 
         //props需要拼接判断处理，可能有些属性下面没有inputs_str或者inputs_pids，先假设都有的情况
         $props = '';
@@ -231,12 +234,6 @@ class Jad_goods_model extends CI_Model {
         $propertyAlias = $this->input->post('product_item_property_alias');
         $inputStr = $this->input->post('product_inputs_str');
         $inputPids = $this->input->post('product_inputs_pids');
-        var_dump($props);
-        var_dump($propertyAlias);
-        //var_dump($skuProps);
-        //var_dump($inputStr);
-        //var_dump($inputPids);
-        //var_dump($cId);
 
         $this->load->library('topsdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItemAddRequest');
@@ -253,17 +250,18 @@ class Jad_goods_model extends CI_Model {
         $this->topsdk->req->setPropertyAlias($propertyAlias);
         $this->topsdk->req->setInputPids($inputPids);
         $this->topsdk->req->setInputStr($inputStr);
-        //$this->topsdk->req->setImage('@http://service.jadiiar.com/piwigo/i.php?/upload/2013/05/12/20130512213849-1e08cb99-me.jpg');
-        //获取图片的名称，然后通过piwigo的本地绝对地址来确定文件名称
+        
+        //远程地址访问失败：$this->topsdk->req->setImage('@http://service.jadiiar.com/piwigo/i.php?/upload/2013/05/12/20130512213849-1e08cb99-me.jpg');
+        //本地绝对地址访问成功：$this->topsdk->req->setImage('@C:\Users\ChenJ\Desktop\20130522045702-f37e732882-me.jpg');
 
-        //$this->topsdk->req->setImage('@C:\Users\ChenJ\Desktop\20130522045702-f37e732882-me.jpg');
+        //获取图片的名称，然后通过piwigo的本地绝对地址来确定文件名称
+        $localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
+        $this->topsdk->req->setImage('@'.$localPath);
+
 
         //参数为sessionkey,在配置文件中读取
         $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-        //下面这个是jadiiar的
-        //$result = $this->topsdk->get_auth_data('6100306f6ce043171199638e4a91441975115ceb5fd242a372474303');
 
-        //var_dump($itemDesc);
         if ( count($result) == 1){
             //发布成功
             var_dump($result['item']['iid']);

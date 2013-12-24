@@ -92,6 +92,7 @@
         <input type="hidden" name = "product_inputs_str" id = "product_inputs_str" value = '<?php echo $productItem['inputs_str']; ?>' />
         <input type="hidden" name = "product_inputs_pids" id = "product_inputs_pids" value = '<?php echo $productItem['inputs_pids']; ?>' />
         <input type="hidden" name = "productTitle" id = "productTitle" value = '<?php echo $productItem['product_title']; ?>' />
+        <input type="hidden" name = "img_remote_url" value="<?php echo $productItem['item_img_link']; ?>" />
 
 	    <?php echo form_close();?>
         <?php $this->load->view('includes/jad_footer'); ?>  

@@ -389,6 +389,27 @@ class Jad_global_model extends CI_Model {
 	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-2s'.'.'.$img_type ;
 	 	return $subUrl;
 	 }
+	function get_local_image_path($url){
+        //判断链接是否来自原图还是来自压缩图
+        $img_name = '';
+        $img_type = '';
+
+        $img_name = substr($url,strrpos($url,'upload') + 7 , 34 );
+        
+        if ( strrpos($url,'_data/i') != false ){
+            //来自压缩图
+            $img_type = substr($url,strrpos($url,'upload') + 45);
+        }else if ( strrpos($url,'i.php?') != false ){
+            //来自压缩图
+            $img_type = substr($url,strrpos($url,'upload') + 45);
+        }else{
+            //来自原图
+            $img_type = substr($url,strrpos($url,'upload') + 42 );
+        }
+
+	 	$localPath = '/opt/webapps/apps/piwigo/_data/i/upload/'.$img_name.'-me'.'.'.$img_type ;
+	 	return $localPath;
+    }
   /**
      * 对系统提示信息（p标签包裹的数据）进行重新处理        
 	 * 参数：系统生成的提示信息 
