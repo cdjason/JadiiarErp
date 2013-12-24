@@ -386,7 +386,7 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($fUrl,strrpos($fUrl,'upload') + 42 );
         }
 
-	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-2s'.'.'.$img_type ;
+	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-sq'.'.'.$img_type ;
 	 	return $subUrl;
 	 }
 	function get_local_image_path($url){
@@ -407,8 +407,8 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($url,strrpos($url,'upload') + 42 );
         }
 
-	 	$localPath = '/opt/webapps/apps/piwigo/_data/i/upload/'.$img_name.'-me'.'.'.$img_type ;
-	 	return $localPath;
+	$localPath = '/opt/webapps/apps/piwigo/_data/i/upload/'.$img_name.'-xs'.'.'.$img_type ;
+	return $localPath;
     }
   /**
      * 对系统提示信息（p标签包裹的数据）进行重新处理        

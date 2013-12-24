@@ -55,7 +55,7 @@ class Jad_goods extends CI_Controller {
 			$this->load->model('jad_goods_model');
 			$this->jad_goods_model->add_product();
 		}
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItemcatsGetRequest');
         $this->topsdk->req->setFields("cid,parent_cid,name,is_parent");
         $this->topsdk->req->setParentCid(0);

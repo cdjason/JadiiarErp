@@ -235,7 +235,7 @@ class Jad_goods_model extends CI_Model {
         $inputStr = $this->input->post('product_inputs_str');
         $inputPids = $this->input->post('product_inputs_pids');
 
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItemAddRequest');
         $this->topsdk->req->setNum($itemNum);
         $this->topsdk->req->setPrice($itemPrice);
@@ -705,7 +705,7 @@ class Jad_goods_model extends CI_Model {
      * 参数：通过配置文件获取店铺昵称
      */
     function get_seller_cats_by_nickname(){
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('SellercatsListGetRequest');
         //从配置文件中获取店铺昵称
         $this->topsdk->req->setNick($this->config->item('nick_name'));
@@ -721,7 +721,7 @@ class Jad_goods_model extends CI_Model {
      */
     function get_itemcats_by_parent_id($parentCid)
     {
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItemcatsGetRequest');
         $this->topsdk->req->setFields("cid,parent_cid,name,is_parent,status");
         $this->topsdk->req->setParentCid($parentCid);
@@ -737,7 +737,7 @@ class Jad_goods_model extends CI_Model {
      */
     function get_itemprops_by_cid($cId)
     {
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItempropsGetRequest');
         $this->topsdk->req->setFields("pid,name,must,multi,prop_values,is_key_prop,is_sale_prop,is_enum_prop,parent_pid,is_input_prop,child_template");
         $this->topsdk->req->setCid($cId);
@@ -754,7 +754,7 @@ class Jad_goods_model extends CI_Model {
      */
     function get_child_itemprops($cId,$parentPId)
     {
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItempropsGetRequest');
         $this->topsdk->req->setFields("pid,name,must,parent_pid,parent_vid,multi,prop_values,is_key_prop,is_enum_prop,parent_pid,is_input_prop,child_template");
         $this->topsdk->req->setCid($cId);
@@ -771,7 +771,7 @@ class Jad_goods_model extends CI_Model {
      */
     function get_propvalues($cId,$pId)
     {
-        $this->load->library('topsdk', $this->config->item('topapi_config') );
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('ItempropvaluesGetRequest');
 
         $this->topsdk->req->setFields("cid,pid,prop_name,vid,name,name_alias,status,sort_order");
