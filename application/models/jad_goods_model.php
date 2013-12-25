@@ -215,6 +215,7 @@ class Jad_goods_model extends CI_Model {
         $itemLoState = '重庆';
         $itemLoCity = '重庆';
         $cId = $this->input->post('cid');
+        $locationCheckbox = $this->input->post('location_bought');
         
         //图片在远程piwigo上的地址
         $item_remote_url = $this->input->post('img_remote_url');
@@ -255,9 +256,22 @@ class Jad_goods_model extends CI_Model {
         //本地绝对地址访问成功：$this->topsdk->req->setImage('@C:\Users\ChenJ\Desktop\20130522045702-f37e732882-me.jpg');
 
         //获取图片的名称，然后通过piwigo的本地绝对地址来确定文件名称
-        $localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
-        $this->topsdk->req->setImage('@'.$localPath);
+        
+        //$localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
+        $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
 
+        if(file_exists($localPath))
+        {
+            $this->topsdk->req->setImage('@'.$localPath);
+        }
+        //采购地为海外或港澳台的时候，才有global_stock的设置，但是还是在系统中没有显示出来
+        if($locationCheckbox == 2){
+            //var_dump($locationCheckbox);
+            //var_dump($this->input->post('global_type'));
+            //var_dump($this->input->post('sel_global_stock'));
+            $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
+            $this->topsdk->req->setGlobalStockCountry($this->input->post('sel_global_stock'));
+        }
 
         //参数为sessionkey,在配置文件中读取
         $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));

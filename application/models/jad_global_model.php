@@ -386,7 +386,7 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($fUrl,strrpos($fUrl,'upload') + 42 );
         }
 
-	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-2s'.'.'.$img_type ;
+	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-sq'.'.'.$img_type ;
 	 	return $subUrl;
 	 }
 	function get_local_image_path($url){
