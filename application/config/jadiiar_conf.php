@@ -5,7 +5,7 @@ $config['topapi_config'] = array(
     'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
 );
 
-$config['topapi_session_key'] = '6101f092fc0f675ba1a57681808d5ab46e2a4baf04f278c450669192';
+$config['topapi_session_key'] = '610111051a12705e50111e8eeb0999456ab8dec02546dc7450669192';
 $config['nick_name'] = 'jadiiar';
 //此处定义了分页的条目数量
 $config['pag_limit'] = 5;
