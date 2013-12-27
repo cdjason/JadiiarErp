@@ -61,17 +61,17 @@
             </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>价格</b></div>
-                <div class="span10" ><input type="text" name="price" id="price" /></div>
+                <div class="span10" ><input type="text" name="price" id="price" /></div></pre>
             </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>数量</b></div>
                 <div class="span10" ><input type="text" name="num" id="num" /></div>
             </div>              
-            <div class="row-fluid">
+            <div class="row-fluid" id = 'location_checkbox' name = 'location_checkbox'>
                 <div class="span2" ><b>采购地</b></div>
                 <div class="span10" >
-                     <input type="radio" name="item_from" id="item_from1" value="option1" checked>国内&nbsp;&nbsp;&nbsp;&nbsp;
-                     <input type="radio" name="item_from" id="item_from2" value="option2">海外及港澳台
+                     <input type="radio" name="location_bought" id="location_bought" value="1" checked>国内&nbsp;&nbsp;&nbsp;&nbsp;
+                     <input type="radio" name="location_bought" id="location_bought" value="2">海外及港澳台
                 </div>
             </div>              
             <div class="row-fluid">
@@ -362,6 +362,139 @@ function insertAfter(newElement,targetElement) {
 
 $(document).ready(function(){
     $("#input11").cleditor(); 
+    //为选择采购地绑定响应时间
+    $("input[type='radio'][name='location_bought']").change(
+        function() {
+            var $selectedvalue = $("input[type='radio'][name='location_bought']:checked").val();
+            if ($selectedvalue == 1) {
+                //清除选择框
+                $("#globalStockDiv")[0].outerHTML = '';
+            }
+            else {
+                //在采购地的后面加上选择附加选择框，并调用接口，获取国家、地区值
+                var propDiv = document.createElement('div');
+                propDiv.id = 'globalStockDiv';
+                propDiv.setAttribute('class', 'row-fluid');
+                var propDivName = document.createElement('div');
+                propDivName.setAttribute('class', 'span2');
+                var propDivValue = document.createElement('div');
+                propDivValue.setAttribute('class', 'span10');
+
+                var propSubDiv1 = document.createElement('div');
+                propSubDiv1.setAttribute('class', 'row-fluid');
+                var propSubDivName1 = document.createElement('div');
+                propSubDivName1.appendChild(document.createTextNode('国家/地区'));
+                propSubDivName1.setAttribute('class', 'span2');
+                var propSubDivValue1 = document.createElement('div');
+                propSubDivValue1.setAttribute('class', 'span10');
+                propSubDiv1.appendChild(propSubDivName1);
+                propSubDiv1.appendChild(propSubDivValue1);
+                //设置select中的值
+
+                var sel = document.createElement('SELECT');
+                sel.setAttribute('name', 'sel_global_stock');
+                sel.setAttribute('id', 'sel_global_stock');
+                sel.setAttribute('class', 'span6');
+
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '');
+                op.innerHTML = '--请选择国家或地区--';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '美国');
+                op.innerHTML = '美国';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '香港');
+                op.innerHTML = '香港';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '日本');
+                op.innerHTML = '日本';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '英国');
+                op.innerHTML = '英国';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '新西兰');
+                op.innerHTML = '新西兰';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '德国');
+                op.innerHTML = '德国';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '韩国');
+                op.innerHTML = '韩国';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '荷兰');
+                op.innerHTML = '荷兰';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '澳洲');
+                op.innerHTML = '澳洲';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '法国');
+                op.innerHTML = '法国';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '意大利');
+                op.innerHTML = '意大利';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '台湾');
+                op.innerHTML = '台湾';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '澳门');
+                op.innerHTML = '澳门';
+                sel.appendChild(op);
+                var op = document.createElement('OPTION');
+                op.setAttribute('value', '其他');
+                op.innerHTML = '其他';
+                sel.appendChild(op);
+                propSubDivValue1.appendChild(sel);
+
+                var propSubDiv2 = document.createElement('div');
+                propSubDiv2.setAttribute('class', 'row-fluid');
+                var propSubDivName2 = document.createElement('div');
+                propSubDivName2.appendChild(document.createTextNode('库存类型'));
+                propSubDivName2.setAttribute('class', 'span2');
+                var propSubDivValue2 = document.createElement('div');
+                propSubDivValue2.setAttribute('class', 'span10');
+                propSubDiv2.appendChild(propSubDivName2);
+                propSubDiv2.appendChild(propSubDivValue2);
+                //增加radiobox
+                var radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'global_type';
+                radio.id = 'global_type';
+                radio.value = '1';
+                propSubDivValue2.appendChild(radio);
+                propSubDivValue2.appendChild(document.createTextNode('现货'));
+
+                var radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'global_type';
+                radio.id = 'global_type';
+                radio.value = '2';
+                propSubDivValue2.appendChild(radio);
+                propSubDivValue2.appendChild(document.createTextNode('代购'));
+                
+                propDiv.appendChild(propDivName);
+                propDiv.appendChild(propDivValue);
+
+                propDivValue.appendChild(propSubDiv1);
+                propDivValue.appendChild(propSubDiv2);
+
+                insertAfter(propDiv,$("#location_checkbox")[0]);
+
+            }
+    });
+    
     createPropsForm(<?php echo $productItem['cid']; ?>);
 });
 </script>  

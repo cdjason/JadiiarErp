@@ -215,7 +215,7 @@ class Jad_goods_model extends CI_Model {
         $itemLoState = '重庆';
         $itemLoCity = '重庆';
         $cId = $this->input->post('cid');
-        
+        $locationCheckbox = $this->input->post('location_bought');
         //图片在远程piwigo上的地址
         $item_remote_url = $this->input->post('img_remote_url');
 
@@ -255,16 +255,35 @@ class Jad_goods_model extends CI_Model {
         //本地绝对地址访问成功：$this->topsdk->req->setImage('@C:\Users\ChenJ\Desktop\20130522045702-f37e732882-me.jpg');
 
         //获取图片的名称，然后通过piwigo的本地绝对地址来确定文件名称
-        $localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
-        $this->topsdk->req->setImage('@'.$localPath);
+        
+        //$localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
+        $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
 
+        if(file_exists($localPath))
+        {
+            $this->topsdk->req->setImage('@'.$localPath);
+        }
+        //采购地为海外或港澳台的时候，才有global_stock的设置，但是还是在系统中没有显示出来，目前还不知道在什么地方显示
+        if($locationCheckbox == 2){
+            $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
+            $this->topsdk->req->setGlobalStockCountry($this->input->post('sel_global_stock'));
+        }
 
         //参数为sessionkey,在配置文件中读取
         $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
 
         if ( count($result) == 1){
-            //发布成功
+            //发布成功，需要对数据继续处理，获取生成的num_iid，sku_id
             var_dump($result['item']['iid']);
+            //根据num_iid获取商品信息中的sku信息来为每个item指定sku_id
+            /*
+            $this->load->library('topsdk', $this->config->item('topapi_config') );
+            $this->topsdk->autoload('ItemGetRequest');
+            $this->topsdk->req->setFields("detail_url,num_iid,title,nick,type,cid,seller_cids,props,input_pids,input_str,desc,pic_url,num,valid_thru,list_time,delist_time,stuff_status,location,price,post_fee,express_fee,ems_fee,has_discount,freight_payer,has_invoice,has_warranty,has_showcase,modified,increment,approve_status,postage_id,product_id,auction_point,property_alias,item_img,prop_img,sku,video,outer_id,is_virtual");
+            $this->topsdk->req->setNumIid($result['item']['iid']);
+            $skusList = $this->topsdk->get_data();
+            */
+
         }else{
             //发布失败
             var_dump($result);
