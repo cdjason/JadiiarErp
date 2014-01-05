@@ -22,12 +22,12 @@
             <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $product['product_id']; ?></p>
         </div>
 
-        <h1 class="page-title">新增商品信息</h1>
+        <h1 class="page-title">ERP商品信息维护</h1>
     </div>
     <ul class="breadcrumb">
         <li><a href="index.html">Home</a> <span class="divider">/</span></li>
         <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_product_items/<?php echo $product['product_id']; ?>">商品列表</a> <span class="divider">/</span></li>
-        <li class="active">新增商品信息</li>
+        <li class="active">ERP商品信息维护</li>
     </ul>
 
     <div class="container-fluid">
@@ -37,7 +37,7 @@
 
         <div class="row-fluid">
             <div class="span2">
-                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  增加</button>
+                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  确定</button>
                 <input type="hidden" name="add_product_item" value="1" />
             </div>
             <div class="span1" id = "ajaxPic">
@@ -57,6 +57,12 @@
             <input type="hidden" id ="t_colour_img" name ="t_colour_img"/>
             <input type="hidden" id ="t_sku" name ="t_sku"/>
             <input type="hidden" id ="product_id_hidden" name ="product_id_hidden" value="<?php echo $product['product_id'];?>" />
+            <input type="hidden" id ="property_alias_arr_str" value="<?php echo $propertyAliasArrStr;?>" />
+            <input type="hidden" id ="props_arr_str" value="<?php echo $propsArrStr;?>" />
+            <input type="hidden" id ="props_img_url_arr_str" value="<?php echo $propsImgUrlArrStr;?>" />
+            <input type="hidden" id ="props_img_url_index_arr_str" value="<?php echo $propsImgUrlIndexArrStr;?>" />
+            <input type="hidden" id ="sku_properties_index_arr_str" value="<?php echo $skuPropertiesIndexArrStr;?>" />
+
 
             <?php echo form_close();?>
             <?php $this->load->view('includes/jad_footer'); ?>  
@@ -65,6 +71,19 @@
     </div>
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
+var skuTempArr = new Array();
+var skuPropsNum = 0;
+
+//获取已经存在的数据
+var props_img_url_arr_str = $("#props_img_url_arr_str")[0].value;
+var props_img_url_arr = props_img_url_arr_str.split(",");
+
+var props_img_url_index_arr_str = $("#props_img_url_index_arr_str")[0].value;
+var props_img_url_index_arr = props_img_url_index_arr_str.split(",");
+
+var sku_properties_index_arr_str = $("#sku_properties_index_arr_str")[0].value;
+var sku_properties_index_arr = sku_properties_index_arr_str.split(",");
+
 //提交获取属性链pid:vid，把sku表和颜色色卡图片表做成json字符串放入t_colour_img和t_sku中
 function checkAll(form){
     //遍历颜色色卡图片表，如果色卡信息和图片链接没有值，则不允许提交
@@ -87,9 +106,10 @@ function checkAll(form){
     var temp_th = $("#table_sku")[0].childNodes[1];
     var temp_th_str = '';
     var propSkuArr = new Array();
+    //遍历sku表的每一行
     for(var i=0;i<temp_th.childNodes.length;i++){
         var propSkuTempArr = new Array();
-        //若当前行的列数比第一列的列数少的话,就把前一行的相应列的值加入作为当前列的值
+        //若当前行的列数比前一行的列数少的话,就把前一行的相应列的值加入作为当前列的值
         for(var k=0;k<temp_th.childNodes[0].childNodes.length-temp_th.childNodes[i].childNodes.length;k++){
             propSkuTempArr.push(propSkuArr[i-1][k]);
             temp_th_str = temp_th_str + propSkuArr[i-1][k] + ',';
@@ -120,6 +140,9 @@ function checkAll(form){
 }
 //对更改别名框的触发事件，用于更改附加属性信息中的相关值；注意，有些类目下销售属性的值是不允许更改的，比如手机。
 function setSkuAlias(o){
+    //将更改后的值记录一下，以便下次读取；
+    o.parentNode.parentNode.childNodes[3].value = o.value;
+
     //更改颜色表
     if ( $("#table_color_img_url")[0] != undefined ){
         var temp_tr = $("#table_color_img_url")[0].childNodes[1];
@@ -168,11 +191,12 @@ function nameAlias(o){
 //为每一个属性的名称设定一个别名
 function setAlias(o){
     var oldAlias = o.childNodes[1].childNodes[0].nodeValue;
+    var changedAlias = o.childNodes[3].value;
     //alert(o.childNodes[0].childNodes[0].value);
     var inputAlias = window.document.createElement("input");
     inputAlias.type = "text";
     inputAlias.name = o.childNodes[0].childNodes[0].value;
-    inputAlias.value = oldAlias;
+    inputAlias.value = changedAlias;
     inputAlias.onblur = function(){setSkuAlias(this);};
     inputAlias.setAttribute("class", "span12"); 
     //当checked而且没有input的时候，显示输入框
@@ -256,32 +280,65 @@ function createSkuForm(pValues,tbody,layer,curString){
                     var td = document.createElement('td');
                     td.appendChild(document.createTextNode(pValues[layer][i][1]));
                     td.id = pValues[layer][i][0];
+
                     var input_desc = document.createElement('input');
                     input_desc.type = "text";
                     input_desc.setAttribute("class", "span12"); 
                     var td2 = document.createElement('td');
                     td2.appendChild(input_desc);
+
                     tbody.childNodes[tbody.childNodes.length-1].appendChild(td);
                     tbody.childNodes[tbody.childNodes.length-1].appendChild(td2);
+
+                    //需要为每一个sku的描述信息加上一个sku_props的id，以便匹配ERP中已存的东西，方便修改。
+                    //利用了一个临时数组来保存数据
+                    var tempArr = new Array();
+                    for(var sj = 0; sj < skuPropsNum - tbody.childNodes[tbody.childNodes.length-1].childNodes.length; sj++){
+                        tempArr[sj] = skuTempArr[sj]; 
+                    }
+                    for( var sk = 0; sk < tbody.childNodes[tbody.childNodes.length-1].childNodes.length - 1; sk++){
+                        tempArr.push(tbody.childNodes[tbody.childNodes.length-1].childNodes[sk].id);
+                    }
+                    skuTempArr = tempArr;
+                    td2.id = skuTempArr.join(";"); 
+                    //根据id来匹配数据
+                    var tempIndex = sku_properties_index_arr.indexOf(td2.id);
+                    if(tempIndex >=0){
+                        input_desc.value = props_img_url_arr[tempIndex].split(';')[1];
+                    }
                 }else{
                     var input_desc = document.createElement('input');
                     input_desc.type = "text";
                     input_desc.setAttribute("class", "span12"); 
                     var td2 = document.createElement('td');
                     td2.appendChild(input_desc);
+
                     var tr = document.createElement('tr');
                     var td = document.createElement('td');
                     td.appendChild(document.createTextNode(pValues[layer][i][1]));
                     td.id = pValues[layer][i][0];
+
                     tr.appendChild(td);
                     tr.appendChild(td2);
                     tbody.appendChild(tr);
+
+                    //需要为每一个sku的描述信息加上一个sku_props的id，以便匹配ERP中已存的东西，方便修改。
+                    //利用了一个临时数组来保存数据
+                    skuTempArr[skuTempArr.length - 1] = pValues[layer][i][0]; 
+                    td2.id = skuTempArr.join(";"); 
+                    //根据id来匹配数据
+                    var tempIndex = sku_properties_index_arr.indexOf(td2.id);
+                    if(tempIndex >=0){
+                        input_desc.value = props_img_url_arr[tempIndex].split(';')[1];
+                    }
+                    
                 }
             }
         }
     }
 }
 
+//相应checkbox事件，若存在符合需要的选项，则自动生成颜色框与sku框
 function setSku(){ 
     //propArr为一个二维数组，放置每一个销售属性下checked的value和名称
     var propArr = new Array();
@@ -291,14 +348,15 @@ function setSku(){
     for (var j=0;j<prop_divs.childNodes.length;j++) {//遍历每一个有效的销售属性
         var propValueArr = new Array();
         //每一个属性值数组的一个位置存放该销售属性的名字
-        propValueArr.push(prop_divs.childNodes[j].childNodes[0].innerHTML);
+        propValueArr.push(prop_divs.childNodes[j].childNodes[0].childNodes[0].nodeValue + ':' + prop_divs.childNodes[j].childNodes[0].childNodes[1].value);
         for (var k=1;k<prop_divs.childNodes[j].childNodes[1].childNodes.length;k++) {
             if(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[0].childNodes[0].checked){
                 //把该类销售属性下checked的值都加入到这个数组当中去
                 var propValueArray = new Array();
                 propValueArray.push(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[0].childNodes[0].value);
+                //alert(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[3].value);
                 //alert(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[2].value);
-                propValueArray.push(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[2].value);
+                propValueArray.push(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[3].value);
                 //propVauleArray.push(prop_divs.childNodes[j].childNodes[1].childNodes[k].childNodes[0].childNodes[0].childNodes[0].value);
                 propValueArr.push(propValueArray);
             }
@@ -315,11 +373,13 @@ function setSku(){
     //对sku属性进行组合排序,是直接限定，还是采用笛卡儿积的办法来进行通用的算法设计,销售属性以多维数组的形式存放在propArr数组中
     //第一维是销售属性item，第二维是销售属性下的属性item，第三维放置具体的值，value and name
     if(isRight==1){
-        //alert(propArr.length);
-        //目前假定销售属性下必有颜色属性，构造color_img_url的标题
+
+        //alert(props_img_url_arr);
+        //alert(props_img_url_index_arr );
+        
+        //根据该销售属性的is_color_prop来判断是否颜色属性，若是，则构造color_img_url的标题
         for(var c=0;c<propArr.length;c++){
-            var colorValue = propArr[c][1][0].split(':');
-            if(colorValue[0]=='1627207'){
+            if(propArr[c][0].split(':')[1] == 'colour'){
                 //构造分颜色的图片上传区
                 var th = document.createElement('th');
                 th.setAttribute("class", "span2"); 
@@ -360,6 +420,13 @@ function setSku(){
                     var td2 = document.createElement('td');
                     td2.appendChild(input1);
                     var tr1 = document.createElement('tr');
+
+                    var tempIndex = props_img_url_index_arr.indexOf(td.id);
+                    if(tempIndex >=0){
+                        input.value = props_img_url_arr[tempIndex].split(';')[3];
+                        input1.value = props_img_url_arr[tempIndex].split(';')[2];
+                    }
+
                     tr1.appendChild(td);
                     tr1.appendChild(td1);
                     tr1.appendChild(td2);
@@ -376,16 +443,17 @@ function setSku(){
         var tr = document.createElement('tr');
         for(var p=0;p<propArr.length;p++){
             //获取属性id
-            //alert(propArr[p][1][0].split(':')[0]);
             var th = document.createElement('th');
             th.setAttribute("class", "span2"); 
             th.id = propArr[p][1][0].split(':')[0];
-            th.appendChild(document.createTextNode(propArr[p][0]));
+            th.appendChild(document.createTextNode(propArr[p][0].split(':')[0]));
             tr.appendChild(th);
         }
         var th = document.createElement('th');
         th.appendChild(document.createTextNode('商品描述'));
         tr.appendChild(th);
+        //获取表的列数，并存在入全局变量中
+        skuPropsNum = propArr.length + 1;
 
         var thead = document.createElement('thead');
         thead.appendChild(tr);
@@ -404,8 +472,17 @@ function setSku(){
     }
 }
 
-//创建销售属性的选择表单
+//创建销售属性的选择表单，若本地已存在的销售属性需要展示出来
 function createPropsForm(cid) {
+
+    //将本地已存在的propertyAlias转化为数组
+    var property_alias_arr_str = $("#property_alias_arr_str")[0].value;
+    var props_arr_str = $("#props_arr_str")[0].value;
+
+    var property_alias_arr = property_alias_arr_str.split(";");
+    var props_arr = props_arr_str.split(";");
+
+
     //对提交按钮做出处理
     $("#form_btn")[0].disabled = 'disabled';
     var ajaxPic = document.createElement('img');
@@ -414,6 +491,7 @@ function createPropsForm(cid) {
     //获取该cid下的销售属性
     $.ajax({
         type:"post",
+        async: false,    
         data: "parentId=" + cid,
         url: "<?php echo base_url();?>index.php/jad_goods/get_itemprops_by_cid",
         success: function(data){
@@ -432,11 +510,20 @@ function createPropsForm(cid) {
                     var propDiv = document.createElement('div');
                     propDiv.id = 'pid_' + props[i].pid + '_div';
                     propDiv.setAttribute("class", "row-fluid"); 
-                    //propDiv.appendChild(document.createElement('br'));
                     //创建两个row-fluid型的子DIV，一个放置销售属性的名称，另一个放置属性值
                     var propDivName = document.createElement('div');
                     propDivName.setAttribute("class", "row-fluid"); 
-                    propDivName.appendChild(document.createTextNode(props[i].name+"："));
+                    propDivName.appendChild(document.createTextNode(props[i].name));
+                    //附加一个hidden，来说明该销售属性是否是颜色属性
+                    var hidd = window.document.createElement("input");
+                    hidd.type = "hidden";
+                    if (props[i].is_color_prop){
+                        hidd.value = 'colour';
+                    }else{
+                        hidd.value = 'other';
+                    }
+                    propDivName.appendChild(hidd);
+
                     var propDivValue = document.createElement('div');
                     propDivValue.setAttribute("class", "row-fluid"); 
                     //$("#enum-sale-props")[0].appendChild(document.createTextNode(props[i].name+"："));
@@ -453,7 +540,7 @@ function createPropsForm(cid) {
                                var j;
                                //对某一项销售属性下的选项进行处理
                                for(j in propvalues){
-                                   
+                                   //若该选项的值在本地数据库中有匹配项，那么呈现的元素就有变化 
                                    var span_prop = document.createElement('div');
                                    span_prop.id = 'pid_' + props[i].pid + '_sub_div';
                                    span_prop.setAttribute("class", "span2"); 
@@ -477,28 +564,58 @@ function createPropsForm(cid) {
                                    check.name = 'pid_' + propvalues[j].pid;
                                    check.id = 'pid_' + propvalues[j].pid;
                                    check.value = propvalues[j].pid + ':' + propvalues[j].vid;
-                                   
+                                   //若本地库中存在此项，那么此项为true
+                                   //alert(check.value);
+                                   //alert(props_arr.indexOf(check.value)); 
+                                   if(props_arr.indexOf(check.value)>=0){
+                                       check.checked = true; 
+                                   }
                                    check.onclick = function(){setSku();
                                    };
                                    
                                    span_prop_main_check.appendChild(check);
                                    //var span_vname = window.document.createElement("span");
                                    //span_vname.innerHTML = propvalues[j].name_alias;
-                                   span_prop_main_alias.appendChild(document.createTextNode(propvalues[j].name_alias));
+                                   
+                                   //若本地库中存在此项，那么此项为已设置的alias;否则为原值
+                                   var aliasArrTemp = '';
+                                   if(props_arr.indexOf(check.value)>=0){
+                                       var indexTemp = props_arr.indexOf(check.value);
+                                       aliasArrTemp = property_alias_arr[indexTemp].split(":");
+                                       span_prop_main_alias.appendChild(document.createTextNode(aliasArrTemp[2]));
+                                   }else{
+                                       span_prop_main_alias.appendChild(document.createTextNode(propvalues[j].name_alias));
+                                   }
                                    span_prop_main.appendChild(span_prop_main_check);
                                    span_prop_main.appendChild(span_prop_main_alias);
-                                   //hidden一个值，用于存放未被修改过的原属性值
 
+                                   //hidden一个值，用于存放未被修改过的原属性值
                                    var hidd = window.document.createElement("input");
                                    hidd.type = "hidden";
                                    hidd.value = propvalues[j].name_alias;
                                    span_prop_main.appendChild(hidd);
+
+                                   //hidden一个值，用于存放被修改过的属性值
+                                   var hidd = window.document.createElement("input");
+                                   hidd.type = "hidden";
+                                   if(props_arr.indexOf(check.value)>=0){
+                                       hidd.value = aliasArrTemp[2];
+                                   }else{
+                                       hidd.value = propvalues[j].name_alias;
+                                   }
+                                   span_prop_main.appendChild(hidd);
+
                                    //为每一个销售属性的DIV绑定一个设置别名的方法来设置别名
-                                   span_prop_main.onclick = function(){setAlias(this);
+                                   span_prop_main.onclick = function(){
+                                       setAlias(this);
                                    };
                                    span_prop.appendChild(span_prop_main);
-
                                    propDivValue.appendChild(span_prop);
+
+                                   //若本地库中存在此项，则此项直接变成可输入状态
+                                   if(props_arr.indexOf(check.value)>=0){
+                                       setAlias(span_prop_main);
+                                   }
                                }
 
                            } 
@@ -518,9 +635,13 @@ function createPropsForm(cid) {
         error: function(){
             alert("获取数据失败，请与网站管理员联系！");
         }
+        //若存在已有的销售属性，则需要立即执行setSku命令
     }); 
+    setSku();
 }
 $(document).ready(function(){
+    //设置一个全局的array来帮助获取已经提交的描述值 
+    skuTempArr.push('hello'); 
     createPropsForm(<?php echo $product['cid']; ?>);
     /*
 $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){

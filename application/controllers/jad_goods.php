@@ -55,13 +55,6 @@ class Jad_goods extends CI_Controller {
 			$this->load->model('jad_goods_model');
 			$this->jad_goods_model->add_product();
 		}
-        $this->load->library('TopSdk', $this->config->item('topapi_config') );
-        $this->topsdk->autoload('ItemcatsGetRequest');
-        $this->topsdk->req->setFields("cid,parent_cid,name,is_parent");
-        $this->topsdk->req->setParentCid(0);
-        
-        $result = $this->topsdk->get_data();
-        $this->data['item_cats'] = $result['item_cats']['item_cat'];
 
         $this->load->model('jad_goods_model');
         $this->data['productId'] = $this->jad_goods_model->get_new_series_num();
@@ -96,12 +89,17 @@ class Jad_goods extends CI_Controller {
         }
         else if ($this->input->post('delete_product')) 
         {
-            $this->jad_goods_model->update_product();
+            $this->jad_goods_model->update_products();
         }
         // 获取所有的产品信息
         $this->jad_goods_model->get_products();
         // Set any returned status/error messages.
+        //获取提示信息 
         $this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];	
+          if (!empty($this->data['message']))
+          {
+              $this->data['alert_message'] = $this->jad_global_model->get_alert_message($this->data['message']);   
+          } 
         $this->load->view('jadiiar/jad_goods/products_view', $this->data);
     }
     function manage_goods_first()
@@ -130,9 +128,22 @@ class Jad_goods extends CI_Controller {
     }
 
  	/**
- 	 * update_goods_first
- 	 * 更新指定商品的一级信息
+ 	 * update_product
+ 	 * 更新产品信息
+     * 若该产品已经发布，还需要更新宝贝信息
  	 */
+    function update_product($productId)
+    {
+        $this->load->model('jad_goods_model');
+		if ($this->input->post('update_product')) 
+		{
+			$this->jad_goods_model->update_product($productId);
+		}
+		//获取指定产品的信息
+	    $this->data['productInfo'] = $this->jad_goods_model->get_product($productId);
+		$this->load->view('jadiiar/jad_goods/product_update_view', $this->data);
+    }
+
 	function update_goods_first($seriesnum)
 	{
 		if ($this->input->post('update_goods_first')) 
@@ -149,9 +160,50 @@ class Jad_goods extends CI_Controller {
 	// 商品二级信息维护
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
 	/**
-	 * publish_product_item
-	 * 发布商品信息 
+	 * publish_product_items
+     * 发布某产品下的商品信息，若该产品已发布，则为增加num_iid下的sku信息
+     * 否则，则为发布新的产品信息 
+     * 参数：产品ID
 	 */ 
+    function publish_product_items($productId){
+		$this->load->model('jad_goods_model');
+		if ($this->input->post('publish_product_items'))
+		{
+			$this->jad_goods_model->publish_product_items();
+		}
+        //根据product_id，获取该产品下的所有item信息
+        $this->jad_goods_model->get_product_item_info_by_product_id($productId);
+        //根据product_id，获取该产品的所有信息
+        $this->data['productInfo'] = $this->jad_goods_model->get_product($productId);
+		$this->load->view('jadiiar/jad_goods/product_items_publish_view',$this->data);
+    }
+	/**
+	 * publish_sku_items
+     * 修改宝贝基本信息以及sku信息
+     * 参数：产品ID
+	 */ 
+    function publish_sku_items($productId){
+		$this->load->model('jad_goods_model');
+		if ($this->input->post('publish_product_items'))
+		{
+			$this->jad_goods_model->publish_sku_items();
+		}
+        //根据product_id，获取该产品下的所有item信息
+        $this->jad_goods_model->get_normal_product_item_info_by_product_id($productId);
+        //根据product_id，获取该产品的所有信息
+        $this->data['productInfo'] = $this->jad_goods_model->get_product($productId);
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        /*/获取该宝贝的信息，比如描述、价格、数量等等
+        $this->topsdk->autoload('ItemGetRequest');
+        $this->topsdk->req->setFields("props,property_alias");
+        $this->topsdk->req->setNumIid($this->data['productInfo']['num_iid']);
+        $propsArr = $this->topsdk->get_data();
+        $props_current = $propsArr['item']['props'];
+        *///
+
+        $this->topsdk->autoload('ItemSkuGetRequest');
+		$this->load->view('jadiiar/jad_goods/sku_items_publish_view',$this->data);
+    }
     function publish_product_item($itemId){
         //从product_item_view视图中根据item_id查找信息
 		$this->load->model('jad_goods_model');
@@ -175,6 +227,62 @@ class Jad_goods extends CI_Controller {
 		}
 		//获取该product_id下的产品信息
 		$this->data['product'] = $this->jad_goods_model->get_product($productId);
+
+        //获取该product_id下未过期的item信息，提取出已存在的property_alias与props
+		$this->jad_goods_model->get_normal_product_item_info_by_product_id($productId);
+        $productItemsInfo = $this->data['productItemsInfo'];
+        //遍历销售属性，获取已经存在的sku
+        $propsArr = array();
+        $propertyAliasArr = array();
+
+        $propsImgUrlArr = array();
+        $propsImgUrlIndexArr = array();
+
+        //$skuProperiesArr = array();
+        $skuPropertiesIndexArr = array();
+
+        if (count($productItemsInfo) != 0) {
+            for( $i = 0; $i < count($productItemsInfo); $i++){
+                //获取props值，有些props值需要分解
+                $propertyAliasTempArr = explode(";",$productItemsInfo[$i]['property_alias']);
+                //获取已有的信息
+                array_push($propsImgUrlArr,$productItemsInfo[$i]['item_colour_props'].';'.$productItemsInfo[$i]['item_desc'].';'.$productItemsInfo[$i]['item_img_link'].';'.$productItemsInfo[$i]['item_colour']);
+                array_push($propsImgUrlIndexArr,$productItemsInfo[$i]['item_colour_props']);
+                array_push($skuPropertiesIndexArr,$productItemsInfo[$i]['iprops']);
+
+                if (count($propertyAliasTempArr) != 0) {
+                    for( $j = 0; $j < count($propertyAliasTempArr); $j++){
+                        //$propsTempStr = $propsTempArr[$j];
+                        //    var_dump($propsTempStr);
+                        if (!in_array($propertyAliasTempArr[$j],$propertyAliasArr)){
+                            array_push( $propertyAliasArr , $propertyAliasTempArr[$j]);
+                            //var_dump($propsTempStr);
+                            $propsTempArr = explode(":",$propertyAliasTempArr[$j]);
+                            array_push( $propsArr , $propsTempArr[0].':'.$propsTempArr[1] );
+                        }
+                    }
+                }
+            }
+        }
+        //可以思考一下，以前四种数据可以融合在一起
+
+
+        //获取已有的商品销售属性的props值和别名值
+        $this->data['propertyAliasArrStr'] = implode(";",$propertyAliasArr );
+        $this->data['propsArrStr'] = implode(";",$propsArr );
+
+        //获取已有的商品销售属性的色卡、图片链接值
+        $this->data['propsImgUrlArrStr'] = implode(",",$propsImgUrlArr);
+        $this->data['propsImgUrlIndexArrStr'] = implode(",",$propsImgUrlIndexArr);
+
+        $this->data['skuPropertiesIndexArrStr'] = implode(",",$skuPropertiesIndexArr);
+
+        //var_dump($this->data['propertyAliasArrStr']);
+        //var_dump($this->data['propsArrStr']);
+        //var_dump($this->data['propsImgUrlArrStr']);
+        //var_dump($this->data['propsImgUrlIndexArrStr']);
+        //var_dump($this->data['skuPropertiesIndexArrStr']);
+
 		$this->load->view('jadiiar/jad_goods/product_item_add_view',$this->data);
     }
 	function add_goods_second($seriesnum)
@@ -237,6 +345,8 @@ class Jad_goods extends CI_Controller {
         }
         // 获取商品详细信息
         $this->data['productId'] = $productId;
+        //根据product_id，获取该产品的所有信息
+        $this->data['productInfo'] = $this->jad_goods_model->get_product($productId);
         // 判断此商品货号是否过期
         //$seriesnumArray = array();   
         //foreach($this->jad_goods_model->get_seriesnums_unexpired() as $key => $col) {
@@ -246,8 +356,13 @@ class Jad_goods extends CI_Controller {
         //$this->data['goodsFirst'] = $this->jad_global_model->get_goods_info_by_seriesnum($seriesnum);
         // 获取所有的产品信息
         $this->jad_goods_model->get_product_items($productId);
-        // Set any returned status/error messages.
+
+        //获取提示信息 
         $this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];	
+          if (!empty($this->data['message']))
+          {
+              $this->data['alert_message'] = $this->jad_global_model->get_alert_message($this->data['message']);   
+          } 
         $this->load->view('jadiiar/jad_goods/product_items_view', $this->data);
     }
     function manage_goods_second($seriesnum)

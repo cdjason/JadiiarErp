@@ -1,13 +1,24 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+///* 测试环境的数据，不要在正式环境中使用****************************************************
+/*
 $config['topapi_config'] = array(
-    'app_key'=>'21669164', 
-    'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
+    'app_key'=>'1021714229', 
+    'secret_key'=>'sandbox02bf81bdeaa1f085f3aa24882',
 );
 
-$config['topapi_session_key'] = '6100305f6ce041cb2630438e4a91441975115ceb5fd242a372474303';
+$config['topapi_session_key'] = '6102b062f7c9fd1f37bf6518267ecdf9503d543686b46b13619233988';
+*/
+//********************************************************************************************
 
+$config['topapi_config'] = array(
+    'app_key'=>'21714229', 
+    'secret_key'=>'d66487402bf81bdeaa1f085f3aa24882',
+);
+
+$config['topapi_session_key'] = '6101206434b3621dd310f93a0017b74ab49893f79e59fcb450669192';
 $config['nick_name'] = 'jadiiar';
+
 //此处定义了分页的条目数量
 $config['pag_limit'] = 5;
 

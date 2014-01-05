@@ -547,6 +547,7 @@ function createCidSelect(parent_id) {
      data: "parentId=" + parent_id,
      url: "<?php echo base_url();?>index.php/jad_goods/get_itemcats_by_parent_id",
      success: function(data){
+         //alert(data);
          var jsObject = eval('('+data+')');
          jsObject = jsObject.item_cats.item_cat;
 
@@ -584,8 +585,8 @@ function createCidSelect(parent_id) {
 $(document).ready(function(){
     //页面启动的时候，就去调用增加类目选择下拉菜单的方法，只不过传入参数为0，即读取无父子节点的类节点
     createCidSelect(0);
-    //页面启动的时候，就去调用增加店铺类目选择下拉菜单的方法，只不过传入参数为0，即读取一级店铺分类
-    createSellerCidSelect(0);
+    //页面启动的时候，就去调用增加店铺类目选择下拉菜单的方法，只不过传入参数为0，即读取一级店铺分类,该方法暂时不用，结合多店铺时再启用
+    //createSellerCidSelect(0);
     
 
     /*

@@ -48,7 +48,9 @@
                         <th>图片</th>
                         <th>货号</th>
                         <th>产品标题</th>
+                        <th>状态</th>
                         <th>删除</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <?php if (!empty($product)) { ?>
@@ -57,39 +59,42 @@
                     <tr>
                         <td><a id="fancy_box" href = "<?php echo $product_item['product_img_url'];?>">
                             <img class="img-rounded" title="<?php echo $product_item['product_desc'];?>" 
-                                 src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($product_item['product_img_url']);?>"  >
+                                 src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($product_item['product_img_url'],'sq');?>"  >
                         </a></td>
-                        <td>
-						<a href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">
-                        <?php echo $product_item['product_id'];?>
-                        </a>
+                        <td><?php echo $product_item['product_id'];?>
                         </td>
                         <td><?php echo $product_item['product_title'];?>
                         </td>
-                        <td><input type="checkbox" name="delete_product[<?php echo $product_item['product_id'];?>]" value="1"/>
+                        <td>
+                        <?php echo ($product_item['num_iid']=='') ? "未上架" : $product_item['num_iid'] ;?>
+                        </td>
+                        <td><input type="checkbox" name="delete_product[<?php echo $product_item['product_id'];?>]" value="1" <?php echo ($product_item['num_iid']=='') ? "" : "disabled='disabled'";?> />
+                        </td>
+                        <td><a href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">查看商品信息</a>
+                            <a href="<?php echo $base_url.'index.php/jad_goods/update_product/'.$product_item['product_id'];?>">修改</a>
                         </td>
                     </tr>
                 <?php } ?>
                 </tbody>
                 <TFOOT>
       <TR>
-             <TD colSpan=3>
+             <TD colSpan=5>
                <?php if (! empty($pagination['links'])) { ?>
                总数: 共 <?php echo $pagination['total_product'];?> 条查询结果
                链接: <?php echo $pagination['links'];?>
                <?php } ?>
              </TD> 
-         <td colSpan=1>
-  <button type="submit" class="btn" id="del_btn" /><i class="icon-remove"></i> 删除选中的产品信息 
-  </button>
-  <input type="hidden" value="1" />
-         </td>
+             <td colSpan=1>
+                  <button type="submit" class="btn" id="del_btn" /><i class="icon-remove"></i> 删除选中的产品信息 
+                  </button>
+                  <input type="hidden" value="1" />
+             </td>
       </TR>
     </TFOOT>
             <?php } else { ?>
                 <tbody>
                     <tr>
-                        <td colspan="3">
+                        <td colspan="6">
                             No privileges are available.
                         </td>
                     </tr>

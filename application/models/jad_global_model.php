@@ -365,10 +365,10 @@ class Jad_global_model extends CI_Model {
 	* get_url_sub_image_by_formal()
 	* 根据piwigo原图的地址转换为缩略图的地址
     * 因为piwigo中的图片路径可能有多种形式，上传原图或者压缩图都有可能
-    * 参数：上传的piwigo中的图片地址
+    * 参数：上传的piwigo中的图片地址, 返回的地址类型
     * 返回：piwigo中的最小图片(2s图片地址) 
 	*/ 
-	function get_url_sub_image_by_formal($fUrl){
+	function get_url_sub_image_by_formal($fUrl,$iType){
         //判断链接是否来自原图还是来自压缩图
         $img_name = '';
         $img_type = '';
@@ -386,7 +386,7 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($fUrl,strrpos($fUrl,'upload') + 42 );
         }
 
-	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-sq'.'.'.$img_type ;
+	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-'.$iType.'.'.$img_type ;
 	 	return $subUrl;
 	 }
 	function get_local_image_path($url){
@@ -407,25 +407,26 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($url,strrpos($url,'upload') + 42 );
         }
 
-	$localPath = '/opt/webapps/apps/piwigo/_data/i/upload/'.$img_name.'-xs'.'.'.$img_type ;
-	return $localPath;
+        $localPath = '/opt/webapps/apps/piwigo/_data/i/upload/'.$img_name.'-xs'.'.'.$img_type ;
+        return $localPath;
     }
-  /**
-     * 对系统提示信息（p标签包裹的数据）进行重新处理        
-	 * 参数：系统生成的提示信息 
-	 */ 
-  function get_alert_message($message)
-  {
-              $message="<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>".$message;
-              $arr = array();  
-              $doc = new DOMDocument();
-              $doc->loadHTML($message);
-              $params = $doc->getElementsByTagName('p');
-              foreach ($params as $param) 
-              {
-                  $arr[] = array( $param->getAttribute('class'),$param->nodeValue);
-              }
-              return $arr;   
-	 }
+    /**
+    * 对系统提示信息（p标签包裹的数据）进行重新处理        
+    * 参数：一条或多条p标签包裹的提示信息 
+    * 返回：存放class和信息的数据
+    */ 
+    function get_alert_message($message)
+    {
+        $message="<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>".$message;
+        $arr = array();  
+        $doc = new DOMDocument();
+        $doc->loadHTML($message);
+        $params = $doc->getElementsByTagName('p');
+        foreach ($params as $param) 
+        {
+            $arr[] = array( $param->getAttribute('class'),$param->nodeValue);
+        }
+        return $arr;   
+    }
  
 }

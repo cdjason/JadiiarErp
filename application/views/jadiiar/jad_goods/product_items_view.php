@@ -17,6 +17,11 @@
 <?php $this->load->view('includes/jad_sidebar'); ?>  
 <div class="content">
     <div class="header">
+        <div class="stats">
+            <p class="stat" id="product_publish"><span class="number">产品状态</span><?php echo ($productInfo['num_iid'] != '')?"已发布":""; ?></p>
+            <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $productInfo['product_id']; ?></p>
+            <p class="stat" id="product_title"><span class="number">产品标题:</span><?php echo $productInfo['product_title']; ?></p>
+        </div>
         <h1 class="page-title">商品信息维护</h1>
     </div>
             <ul class="breadcrumb">
@@ -26,12 +31,20 @@
 
     <div class="container-fluid">
         <div class="row-fluid">
+
 <?php $this->load->view('includes/jad_message'); ?>  
 <div class="btn-toolbar">
-    <a href="<?php echo $base_url;?>index.php/jad_goods/add_product_item/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-plus"></i> 添加新商品</a>
+   <a href="<?php echo $base_url;?>index.php/jad_goods/add_product_item/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-plus"></i> ERP商品信息维护</a>
+<?php if($productInfo['num_iid'] == ''){ ?>
+   <a href="<?php echo $base_url;?>index.php/jad_goods/publish_product_items/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-road"></i> 宝贝发布</a>
+<?php }else{ ?>
+   <a href="<?php echo $base_url;?>index.php/jad_goods/publish_sku_items/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-road"></i> 宝贝SKU信息设置</a>
+<?php } ?>
+
 <div class="btn-group">
 </div>
 </div>
+
 <?php echo form_open(current_url());?>
 <div class="input-append">
 <input type="text" class="span4 search-query" id="search" placeholder="色卡or商品描述or商品编号" name="search_query" value="<?php echo $search_query;?>">
@@ -49,8 +62,9 @@
                         <th>商品编号</th>
                         <th>产品编号</th>
                         <th>色卡</th>
+                        <th>销售属性</th>
                         <th>描述</th>
-                        <th>操作</th>
+                        <th>商品状态</th>
                         <th>删除</th>
                     </tr>
                 </thead>
@@ -60,7 +74,7 @@
                     <tr>
                         <td><a id="fancy_box" href = "<?php echo $pItem['item_img_link'];?>">
                             <img class="img-rounded" title="<?php echo $pItem['item_img_link'];?>" 
-                                 src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($pItem['item_img_link']);?>"  >
+                                 src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($pItem['item_img_link'],'sq');?>"  >
                         </a></td>
                         <td>
                         <?php echo $pItem['item_id'];?>
@@ -72,18 +86,34 @@
                         <?php echo $pItem['item_colour'];?>
                         </td>
                         <td>
+                        <?php if (!empty($pItem['property_alias'])){
+                                  $skuDescStr = ''; 
+                                  $skuDesc = explode(";",$pItem['property_alias']);
+                                  for($i = 0 ; $i < count($skuDesc) ; $i++){
+                                      $skuItemDesc = explode(":",$skuDesc[$i]);
+                                      $skuDescStr = $skuDescStr.' & '.$skuItemDesc[2]; 
+                                  }
+                                  $skuDescStr = substr($skuDescStr,3);
+                                  echo $skuDescStr;
+                              }
+                        ?>
+                        </td>
+                        <td>
                         <?php echo $pItem['item_desc'];?>
                         </td>
-                        <td><a href = "<?php echo $base_url.'index.php/jad_goods/publish_product_item/'.$pItem['item_id'];?>">发布</a>
+                        <td>
+                        <?php echo ($pItem['item_expired']=='1') ? "正常 &" : "过期 &" ;?>
+                        <?php echo ($pItem['sku_id']=='') ? "未发布" : "已发布" ;?>
                         </td>
-                        <td><input type="checkbox" name="delete_item[<?php echo $pItem['item_id'];?>]" value="1"/>
+                        <td>
+                        <input type="checkbox" name="delete_item[<?php echo $pItem['item_id'];?>]" value="1" <?php echo ($pItem['sku_id']=='') ? "" : "disabled='disabled'";?> />
                         </td>
                     </tr>
                 <?php } ?>
                 </tbody>
                 <TFOOT>
       <TR>
-             <TD colSpan=5>
+             <TD colSpan=6>
 <?php if (! empty($pagination['links'])) { ?>
                总数: 共 <?php echo $pagination['total_product_items'];?> 条查询结果
                链接: <?php echo $pagination['links'];?>
@@ -99,7 +129,7 @@
             <?php } else { ?>
                 <tbody>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             No privileges are available.
                         </td>
                     </tr>
@@ -107,6 +137,7 @@
             <?php } ?>
             </table>
 <input type ='hidden' name='productId' value='<?php echo $productId;?>' />
+<input type ='hidden' name='is_published' value='<?php echo ($productInfo['num_iid'] != '')?"yes":"no";?>' />
             <?php echo form_close();?>
 </div>
 <?php $this->load->view('includes/jad_footer'); ?>  
