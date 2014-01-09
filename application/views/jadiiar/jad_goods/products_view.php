@@ -81,8 +81,8 @@
                         </td>
                         <td><input type="checkbox" name="delete_product[<?php echo $product_item['product_id'];?>]" value="1" <?php echo ($product_item['num_iid']=='') ? "" : "disabled='disabled'";?> />
                         </td>
-                        <td><a class="btn btn-success" href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">查看商品信息</a>
-                            <a class="btn btn-danger" href="<?php echo $base_url.'index.php/jad_goods/update_product/'.$product_item['product_id'];?>">修改</a>
+                        <td><a class="btn btn-success" href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">商品详情</a>
+                            <a class="btn btn-danger"  href="<?php echo $base_url.'index.php/jad_goods/update_product/'.$product_item['product_id'];?>">修改</a>
                         </td>
                     </tr>
                 <?php } ?>

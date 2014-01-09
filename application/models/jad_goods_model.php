@@ -237,7 +237,7 @@ class Jad_goods_model extends CI_Model {
         $cId = $this->input->post('cid');
         $locationCheckbox = $this->input->post('location_bought');
         //图片在远程piwigo上的地址
-        //$item_remote_url = $this->input->post('img_remote_url');
+        $item_remote_url = $this->input->post('img_remote_url');
 
         //props需要拼接判断处理，可能有些属性下面没有inputs_str或者inputs_pids，先假设都有的情况
         $props = '';
@@ -308,10 +308,13 @@ class Jad_goods_model extends CI_Model {
         $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
         var_dump($localPath);
 
+        //var_dump($localPath); //debug get_local_image_path()
         if(file_exists($localPath))
         {
             $this->topsdk->req->setImage('@'.$localPath);
+            //var_dump($localPath); //debug get_local_image_path()
         }
+        //return 0; //debug
         //采购地为海外或港澳台的时候，才有global_stock的设置，但是还是在系统中没有显示出来，目前还不知道在什么地方显示
         if($locationCheckbox == 2){
             $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
@@ -379,7 +382,7 @@ class Jad_goods_model extends CI_Model {
             }
         }
         $this->session->set_flashdata('message',$alertMessage);
-        //redirect('jad_goods/manage_product_items/'.$productId);	
+        redirect('jad_goods/manage_product_items/'.$productId);	 // disable redirect if debug get_local_image_path()
     }
 
     //批量更新sku商品
