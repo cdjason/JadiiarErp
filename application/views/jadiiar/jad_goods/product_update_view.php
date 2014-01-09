@@ -58,7 +58,6 @@
             </div>
             <input type="hidden" name="cid" id="cid"/>
             <input type="hidden" name="num_iid" value="<?php echo $productInfo['num_iid']; ?>"/>
-            <input type="hidden" name="product_img_url" value="<?php echo $productInfo['product_img_url']; ?>"/>
             <?php echo form_close();?>
             <?php $this->load->view('includes/jad_footer'); ?>  
         </div>

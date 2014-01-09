@@ -26,19 +26,30 @@
 
     <div class="container-fluid">
         <div class="row-fluid">
-<?php $this->load->view('includes/jad_message'); ?>  
-<div class="btn-toolbar">
-<a href="<?php echo $base_url;?>index.php/jad_goods/add_product" class="btn btn-primary" ><i class="icon-plus"></i> 添加新产品</a>
-<div class="btn-group">
-</div>
-</div>
-<?php echo form_open(current_url());?>
-<div class="input-append">
-<input type="text" class="span4 search-query" id="search" placeholder="货号or产品标题" name="search_query" value="<?php echo $search_query;?>">
-<input type="submit" name="search_product" class="btn" value="Search" />
-<a class="btn" href="<?php echo $base_url; ?>index.php/jad_goods/manage_product">重设</a>
-</div>
-<?php echo form_close();?>	
+        <?php $this->load->view('includes/jad_message'); ?>  
+            <div class="btn-toolbar">
+                <a href="<?php echo $base_url;?>index.php/jad_goods/add_product" class="btn btn-primary" ><i class="icon-plus"></i> 添加新产品</a>
+                <div class="btn-group">
+                </div>
+            </div>
+            <?php echo form_open(current_url());?>
+        <div class="row-fluid">
+            <div class="span6">
+                <div class="input-prepend">
+                    <input type="text" class="span6 search-query" id="search" placeholder="货号or产品标题" name="search_query" value="<?php echo $search_query;?>">
+                    <input type="submit" name="search_product" class="btn" value="Search" />
+                    <a class="btn" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/num_iid/order_parameter/desc">重设</a>
+                </div>
+            </div>
+            <div class="span6">
+                <div class="input-prepend pull-right ">
+                    <a title="按状态排序" class="btn <?php echo ($orderBy=='num_iid')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/num_iid/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">状态<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
+                    <a title="按产品创建时间排序" class="btn <?php echo ($orderBy=='product_create_time')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/product_create_time/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">时间<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
+                </div>
+            </div>
+            
+        </div>
+            <?php echo form_close();?>	
 
 <div class="well">
     <?php $attributes = array('id' => 'product_list_form');echo form_open(current_url(), $attributes);?>  	
@@ -70,8 +81,8 @@
                         </td>
                         <td><input type="checkbox" name="delete_product[<?php echo $product_item['product_id'];?>]" value="1" <?php echo ($product_item['num_iid']=='') ? "" : "disabled='disabled'";?> />
                         </td>
-                        <td><a href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">查看商品信息</a>
-                            <a href="<?php echo $base_url.'index.php/jad_goods/update_product/'.$product_item['product_id'];?>">修改</a>
+                        <td><a class="btn btn-success" href="<?php echo $base_url.'index.php/jad_goods/manage_product_items/'.$product_item['product_id'];?>">查看商品信息</a>
+                            <a class="btn btn-danger" href="<?php echo $base_url.'index.php/jad_goods/update_product/'.$product_item['product_id'];?>">修改</a>
                         </td>
                     </tr>
                 <?php } ?>
@@ -129,4 +140,3 @@ $(document).ready(function(){
   
 </body>
 </html>
-

@@ -85,7 +85,7 @@ class Jad_goods extends CI_Controller {
         if ($this->input->post('search_product') && $this->input->post('search_query')) 
         {
             $search_query = str_replace(' ','-',$this->input->post('search_query'));
-            redirect('jad_goods/manage_products/search/'.$search_query.'/page/');
+            redirect('jad_goods/manage_products/search/'.$search_query.'/order_by/num_iid/order_parameter/desc/page/');
         }
         else if ($this->input->post('delete_product')) 
         {

@@ -136,6 +136,7 @@
         <input type="hidden" name = "product_inputs_str" id = "product_inputs_str" value = '<?php echo $productInfo['inputs_str']; ?>' />
         <input type="hidden" name = "product_inputs_pids" id = "product_inputs_pids" value = '<?php echo $productInfo['inputs_pids']; ?>' />
         <input type="hidden" name = "productTitle" id = "productTitle" value = '<?php echo $productInfo['product_title']; ?>' />
+        <input type="hidden" name = "img_remote_url" value = '<?php echo $productInfo['product_img_url']; ?>' />
 
         <input type="hidden" name = "sku_properties" id= "sku_properties" />
         <input type="hidden" name = "sku_quantities" id= "sku_quantities" />

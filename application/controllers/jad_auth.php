@@ -41,7 +41,7 @@ class Jad_auth extends CI_Controller {
 			// Redirect logged in admins (For security, admin users should always sign in via Password rather than 'Remember me'.
 			if ($this->flexi_auth->is_admin()) 
 			{
-				redirect('jad_goods/manage_products');
+				redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');
 			}
 			else
 			{

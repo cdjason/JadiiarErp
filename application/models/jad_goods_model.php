@@ -82,10 +82,14 @@ class Jad_goods_model extends CI_Model {
                 'props' => $props,
                 'inputs_str' => $inputStr,
                 'inputs_pids' => $inputPids,
+				'product_create_time' => date('Y-m-d H:i:s',time()),
                 'product_expired' => 0
             );
             $this->db->insert('info_product',$profile_data);	
-            redirect('jad_goods/manage_products');	
+            $alertMessage = '<p class="">新增产品信息成功,ID'.$productId.'</p>';
+            $this->session->set_flashdata('message',$alertMessage);
+            //默认为状态降序的排序
+            redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
         }
 		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
 		return FALSE;
@@ -167,14 +171,15 @@ class Jad_goods_model extends CI_Model {
         $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
         if (array_key_exists('search', $uri))
         {
-            $pagination_url = 'jad_goods/manage_products/search/'.$uri['search'].'/';
-            $config['uri_segment'] = 6; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
+            $pagination_url = 'jad_goods/manage_products/search/'.$uri['search'].'/order_by/num_iid/order_parameter/desc/';
+            $config['uri_segment'] = 10; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
             $search_query = str_replace('-',' ',urldecode($uri['search']));
             
             $this->db->select('*');
             $this->db->from('info_product');
             $this->db->like('product_id', $search_query);
             $this->db->or_like('product_title', $search_query);     
+            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
             $this->db->limit($limit, $offset);
             $query = $this->db->get();			
           
@@ -184,14 +189,22 @@ class Jad_goods_model extends CI_Model {
             $this->db->or_like('product_title', $search_query);     
             $total_product = $this->db->get()->num_rows();
             $this->data['product'] = $query->result_array();            
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
         }
         else
         {
-            $pagination_url = 'jad_goods/manage_products/';
+            $pagination_url = 'jad_goods/manage_products/order_by/'.$uri['order_by'].'/order_parameter/'.$uri['order_parameter'].'/';
 			$search_query = FALSE;
-			$config['uri_segment'] = 4;
-	        $query = $this->db->get_where('info_product',array(), $limit, $offset);
+			$config['uri_segment'] = 8;
+            $this->db->select("*"); 
+            $this->db->from('info_product');
+            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
+            $this->db->limit($limit, $offset);
+	        $query = $this->db->get();
 			$this->data['product'] = $query->result_array();		 
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
 	        $total_product = $this->db->get('info_product')->num_rows();
         }
         		// Create user record pagination.
@@ -219,8 +232,8 @@ class Jad_goods_model extends CI_Model {
         $itemDesc = $this->input->post('format_item_desc');
         $itemDesc = html_entity_decode($itemDesc);
         //var_dump($itemDesc);
-        $itemLoState = '重庆';
-        $itemLoCity = '重庆';
+        $itemLoState = '海外';
+        $itemLoCity = '美国';
         $cId = $this->input->post('cid');
         $locationCheckbox = $this->input->post('location_bought');
         //图片在远程piwigo上的地址
@@ -293,6 +306,7 @@ class Jad_goods_model extends CI_Model {
         
         //$localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
         $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
+        var_dump($localPath);
 
         if(file_exists($localPath))
         {
@@ -365,7 +379,7 @@ class Jad_goods_model extends CI_Model {
             }
         }
         $this->session->set_flashdata('message',$alertMessage);
-        redirect('jad_goods/manage_product_items/'.$productId);	
+        //redirect('jad_goods/manage_product_items/'.$productId);	
     }
 
     //批量更新sku商品
@@ -631,6 +645,7 @@ class Jad_goods_model extends CI_Model {
                 $this->topsdk->autoload('ItemUpdateRequest');
                 $this->topsdk->req->setNumIid($this->input->post('num_iid'));
                 $this->topsdk->req->setTitle($this->input->post('product_title')); 
+                //var_dump($this->input->post('product_img_url'));
                 //$localPath = $this->jad_global_model->get_local_image_path($this->input->post('product_img_url'));
                 $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
 
