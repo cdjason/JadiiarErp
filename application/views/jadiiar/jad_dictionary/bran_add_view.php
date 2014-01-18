@@ -4,6 +4,22 @@
 <meta charset="utf-8">
 <title>JaddiarERP</title>
 <?php $this->load->view('includes/jad_head'); ?>  
+<style>
+
+		label.valid {
+		  width: 24px;
+		  height: 24px;
+		  background: url('<?php echo $includes_dir;?>/images/valid.png') center center no-repeat;
+		  display: inline-block;
+		  text-indent: -9999px;
+		}
+		label.error {
+			font-weight: bold;
+			color: red;
+			padding: 2px 8px;
+			margin-top: 2px;
+		}
+</style>
 </head>
   <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
   <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
@@ -60,6 +76,42 @@
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
 $(document).ready(function(){
+
+	// Validate
+	// http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+	// http://docs.jquery.com/Plugins/Validation/
+	// http://docs.jquery.com/Plugins/Validation/validate#toptions
+
+		$('#new_branch_form').validate({
+	    rules: {
+	      register_branch_name: {
+	        minlength: 8,
+	        required: true
+	      },
+	      email: {
+	        required: true,
+	        email: true
+	      },
+	      subject: {
+	      	minlength: 2,
+	        required: true
+	      },
+	      message: {
+	        minlength: 2,
+	        required: true
+	      }
+	    },
+			highlight: function(element) {
+				$(element).closest('.control-group').removeClass('success').addClass('error');
+			},
+			success: function(element) {
+				element
+				.text('OK!').addClass('valid')
+				.closest('.control-group').removeClass('error').addClass('success');
+			}
+	  });
+
+
     $('#form_btn').confirm({
 		'title' : '新增分店信息',
 		'message' : '您确定要新增该分店信息吗？',        

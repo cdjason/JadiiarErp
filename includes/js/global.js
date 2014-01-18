@@ -1,5 +1,6 @@
 $(function() 
 {
+
 	//对所有submit按钮的遮罩，防止重复提交。
 	$(document).ready(function() {
     $('#submit').click(function() {

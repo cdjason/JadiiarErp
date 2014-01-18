@@ -43,8 +43,9 @@
             </div>
             <div class="span6">
                 <div class="input-prepend pull-right ">
+                    <a title="按品牌排序" class="btn <?php echo ($orderBy=='product_brand')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/product_brand/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">品牌<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
                     <a title="按状态排序" class="btn <?php echo ($orderBy=='num_iid')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/num_iid/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">状态<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
-                    <a title="按产品创建时间排序" class="btn <?php echo ($orderBy=='product_create_time')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/product_create_time/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">时间<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
+                    <a title="按产品创建时间排序" class="btn <?php echo ($orderBy=='product_create_time')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/product_create_time/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">新品<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
                 </div>
             </div>
             
@@ -58,9 +59,12 @@
                     <tr>
                         <th>图片</th>
                         <th>货号</th>
-                        <th>产品标题</th>
-                        <th>状态</th>
-                        <th>删除</th>
+                        <th class = "span1">品牌</th>
+                        <th class = "span1">类别</th>
+                        <th>产品名称</th>
+                        <th class = "span2">状态</th>
+                        <th>发布店铺</th>
+                        <th class = "span1">删除</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -74,10 +78,18 @@
                         </a></td>
                         <td><?php echo $product_item['product_id'];?>
                         </td>
+                        <td><?php echo $product_item['product_brand'];?>
+                        </td>
+                        </td>
+                            <td title = "<?php echo $product_item['cid_name_chain'];?>"><?php $subCidName = explode(',',$product_item['cid_name_chain']);
+                                  echo $subCidName[ count( $subCidName ) - 1 ];?>
+                        </td>
                         <td><?php echo $product_item['product_title'];?>
                         </td>
                         <td>
                         <?php echo ($product_item['num_iid']=='') ? "未上架" : $product_item['num_iid'] ;?>
+                        </td>
+                        <td><?php echo $product_item['shop_published_on'];?>
                         </td>
                         <td><input type="checkbox" name="delete_product[<?php echo $product_item['product_id'];?>]" value="1" <?php echo ($product_item['num_iid']=='') ? "" : "disabled='disabled'";?> />
                         </td>
@@ -89,7 +101,7 @@
                 </tbody>
                 <TFOOT>
       <TR>
-             <TD colSpan=5>
+             <TD colSpan=8>
                <?php if (! empty($pagination['links'])) { ?>
                总数: 共 <?php echo $pagination['total_product'];?> 条查询结果
                链接: <?php echo $pagination['links'];?>
@@ -105,7 +117,7 @@
             <?php } else { ?>
                 <tbody>
                     <tr>
-                        <td colspan="6">
+                        <td colspan="8">
                             No privileges are available.
                         </td>
                     </tr>

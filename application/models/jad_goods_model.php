@@ -61,7 +61,10 @@ class Jad_goods_model extends CI_Model {
 		if ($this->form_validation->run())
 		{			
             $cId = $this->input->post('cid');
-            $sellerCats = $this->input->post('seller_cats');
+            $cNameChain = $this->input->post('cid_name_chain');
+            
+            $brand = $this->input->post('product_brand');
+
             $props = $this->input->post('props');
             $inputStr = $this->input->post('input_str');
             $inputPids = $this->input->post('input_pids');
@@ -77,8 +80,10 @@ class Jad_goods_model extends CI_Model {
                 'product_title' => $this->input->post('product_title'),
                 'product_desc' => $productDesc,
                 'product_img_url' => $productImgUrl,
-                'product_seller_cats' => $sellerCats,
+                //'product_seller_cats' => $sellerCats,
+                'product_brand' => $brand,
                 'cid' => $cId,
+                'cid_name_chain' => $cNameChain,
                 'props' => $props,
                 'inputs_str' => $inputStr,
                 'inputs_pids' => $inputPids,
@@ -221,19 +226,24 @@ class Jad_goods_model extends CI_Model {
     }
 
     function publish_product_items(){
+        $sellerCats = $this->input->post('seller_cats_str');
+        $itemTitle = $this->input->post('product_title');
+        $itemShop = $this->input->post('publish_shop');
         //获取产品ID
         $productId = $this->input->post('product_id');
         //从发布商品页面获取该商品发布必须的参数
         $itemNum = $this->input->post('product_items_num');
         $itemPrice = $this->input->post('price');
-        $itemType = 'fixed';
         $itemStuffStatus = $this->input->post('stuffStatus');
-        $itemTitle = $this->input->post('productTitle');
+
         $itemDesc = $this->input->post('format_item_desc');
         $itemDesc = html_entity_decode($itemDesc);
+
         //var_dump($itemDesc);
-        $itemLoState = '海外';
-        $itemLoCity = '美国';
+        $itemType = 'fixed'; //发布类型，fixed:一口价；auction:拍卖
+        $itemLoState = '海外'; //宝贝所在地
+        $itemLoCity = '美国'; //宝贝所在城市
+        $itemFreightPayer = 'seller'; //邮费承担方式，seller：卖家承担；buyer：买家承担
         $cId = $this->input->post('cid');
         $locationCheckbox = $this->input->post('location_bought');
         //图片在远程piwigo上的地址
@@ -271,7 +281,10 @@ class Jad_goods_model extends CI_Model {
         $this->topsdk->req->setPropertyAlias($propertyAlias);
         $this->topsdk->req->setInputPids($inputPids);
         $this->topsdk->req->setInputStr($inputStr);
-        
+        $this->topsdk->req->setFreightPayer($itemFreightPayer);
+        $this->topsdk->req->setSellerCids($sellerCats); 
+        $this->topsdk->req->setOuterId($productId);
+
         //若已经选择了sku，则必须提交以下属性
         $this->topsdk->req->setSkuProperties($this->input->post('sku_properties'));
         $this->topsdk->req->setSkuQuantities($this->input->post('sku_quantities'));
@@ -306,7 +319,6 @@ class Jad_goods_model extends CI_Model {
         
         //$localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
         $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
-        var_dump($localPath);
 
         //var_dump($localPath); //debug get_local_image_path()
         if(file_exists($localPath))
@@ -315,7 +327,7 @@ class Jad_goods_model extends CI_Model {
             //var_dump($localPath); //debug get_local_image_path()
         }
         //return 0; //debug
-        //采购地为海外或港澳台的时候，才有global_stock的设置，但是还是在系统中没有显示出来，目前还不知道在什么地方显示
+        //采购地为海外或港澳台的时候，才有global_stock的设置，很有可能和消费者保障权益有关，现货必须在规定时间发货
         if($locationCheckbox == 2){
             $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
             $this->topsdk->req->setGlobalStockCountry($this->input->post('sel_global_stock'));
@@ -324,7 +336,7 @@ class Jad_goods_model extends CI_Model {
         //用于保存各个SKU操作的回馈信息
         $alertMessage = '';
 
-        //参数为sessionkey,在配置文件中读取
+        //参数为sessionkey,在配置文件中读取;若访问不同的店铺，就要获取不同的sessionkey
         $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
 
         if ( count($result) == 1){
@@ -347,6 +359,7 @@ class Jad_goods_model extends CI_Model {
                 'props' => $pd_props_update,
                 'inputs_str' => $inputStr,
                 'inputs_pids' => $inputPids,
+                'shop_published_on' => $itemShop,
                 'num_iid' => $result['item']['iid']
 			);		
             $this->db->trans_start();
@@ -389,10 +402,15 @@ class Jad_goods_model extends CI_Model {
     //注意：不能通过item.update接口直接覆盖更新sku的信息
     //先实现更新sku的信息
     function publish_sku_items(){
+        $itemTitle = $this->input->post('product_title');
+        $locationCheckbox = $this->input->post('location_bought');
+        $sellerCats = $this->input->post('seller_cats_str');
         $itemDesc = $this->input->post('format_item_desc');
         $itemDesc = html_entity_decode($itemDesc);
+
         $itemNum = $this->input->post('product_items_num');
         $productPrice = $this->input->post('product_price');
+
         $numIid = $this->input->post('num_iid');
         $pItemProps = $this->input->post('product_item_props');
         $sPropertyAlias = $this->input->post('props_property_alias');
@@ -417,13 +435,22 @@ class Jad_goods_model extends CI_Model {
                 $tempProps = $tempProps.';'.$pItemProps;
             }
         }
+        
+        /*
+        var_dump($locationCheckbox);
+        var_dump($tempProps);
+        var_dump($sPropertyAlias);
+        var_dump($itemDesc);
+        var_dump($productPrice);
+        var_dump($itemNum);
+        var_dump($sellerCats);
+        */
 
         //获取需要删除的sku的sku_properties参数数组
         $skuPropertiesDelArr = explode("#",$skuPropertiesDel);
         $skuPropertiesEditArr = explode("#",$skuPropertiesEdit);
         
         $productInfo = $this->get_product($productId);
-
         $this->load->library('TopSdk', $this->config->item('topapi_config') );
         //遍历提交的sku属性，如果没有选择，就是删除sku，如果选择，就是更新sku
         
@@ -448,7 +475,7 @@ class Jad_goods_model extends CI_Model {
                     $alertMessage = $alertMessage.'<p class="">SKU信息更新成功,ID:'.$result['sku']['sku_id'].'</p>';
                 }else{
                     //操作失败
-                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息更新失败:'.$result['msg'].'</p>';
+                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息更新失败:'.$result['sub_msg'].'</p>';
                 }
             }
         }
@@ -501,7 +528,12 @@ class Jad_goods_model extends CI_Model {
         $this->topsdk->req->setNum($itemNum);
         $this->topsdk->req->setPrice($productPrice);
         $this->topsdk->req->setDesc($itemDesc);
-
+        $this->topsdk->req->setSellerCids($sellerCats);
+        $this->topsdk->req->setTitle($itemTitle);
+        if($locationCheckbox == 2){
+            $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
+            $this->topsdk->req->setGlobalStockCountry($this->input->post('sel_global_stock'));
+        }
         
         $this->topsdk->req->setProps($tempProps);
         $this->topsdk->req->setPropertyAlias($sPropertyAlias);
@@ -633,8 +665,18 @@ class Jad_goods_model extends CI_Model {
 		$this->form_validation->set_rules($validation_rules);
 		if ($this->form_validation->run())
 		{
+            //需要更改相应inputs_str的信息
+            $inputsPidsArr = explode(',',$this->input->post('inputs_pids'));
+            $inputsStrArr = explode(',',$this->input->post('inputs_str'));
+            //当inputs_pids中含有品牌的id：20000时，则进行替换
+            if (in_array('20000',$inputsPidsArr)){
+                $inputsStrArr[array_search('20000', $inputsPidsArr)] = $this->input->post('product_brand');
+            }
+
 			$profile_data = array(
                 'product_title' => $this->input->post('product_title'),
+                'inputs_str' => implode(',',$inputsStrArr),
+                'product_brand' => $this->input->post('product_brand'),
                 'product_desc' => $this->input->post('product_desc'),
                 'product_img_url' => $this->input->post('product_img_url')
 			);		
@@ -642,7 +684,9 @@ class Jad_goods_model extends CI_Model {
 			$this->db->update('info_product', $profile_data); 
             //注意，若没有改动数据的提交，会被数据库认为是没有修改，从而$this->db->affected_rows()返回0
 
-            //判断该产品是否已经提交，若提交，则要修改宝贝的相应信息
+            /***判断该产品是否已经提交，若提交，则要修改宝贝的相应信息**************************************************
+             * 新修改，不允许在这个地方去修改宝贝信息
+
             if ($this->input->post('num_iid') != '' ){
                 $this->load->library('TopSdk', $this->config->item('topapi_config') );
                 $this->topsdk->autoload('ItemUpdateRequest');
@@ -671,7 +715,8 @@ class Jad_goods_model extends CI_Model {
                 }
             }
             $this->session->set_flashdata('message',$alertMessage);
-            redirect('jad_goods/manage_products');	
+            **************************************************************************************************************/
+            redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
 		}
 		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
 		return FALSE;
@@ -692,7 +737,7 @@ class Jad_goods_model extends CI_Model {
                 $this->db->delete('info_product', array('product_id' => $product_id)); 
             }
         }
-        redirect('jad_goods/manage_products');			
+        redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
     }
  	/**
 	 * update_item
@@ -1040,6 +1085,26 @@ class Jad_goods_model extends CI_Model {
   function get_product_item_info_by_item_id($itemId){
   	$this->data['productItem'] = $this->db->get_where('product_item_view',array('item_id'=> $itemId ))->row_array();
   }
+
+    function get_sku_info_by_sId($sId,$numIid){
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        $this->topsdk->autoload('ItemSkuGetRequest');
+        $this->topsdk->req->setFields("sku_id,iid,properties,quantity,price,outer_id,created,modified,status");
+        $this->topsdk->req->setSkuId($sId);
+        $this->topsdk->req->setNumIid($numIid);
+        $skuInfo = $this->topsdk->get_data();
+        echo json_encode($skuInfo['sku']);
+    }
+    /**
+    * get_product_items_by_pId
+    * AJAX方法通过产品ID获取未过期的商品信息 
+    * 编辑宝贝页面调用，便于页面局部刷新
+    */
+    function get_product_items_by_pId($pId){
+        $result = $this->db->get_where('product_item_view',array('product_id'=> $pId , 'item_expired' => 1 ))->result_array();
+        echo json_encode($result); 
+    }
+
   function get_product_item_info_by_product_id($pId){
   	$this->data['productItemsInfo'] = $this->db->get_where('product_item_view',array('product_id'=> $pId ))->result_array();
   }
@@ -1047,16 +1112,30 @@ class Jad_goods_model extends CI_Model {
   	$this->data['productItemsInfo'] = $this->db->get_where('product_item_view',array('product_id'=> $pId , 'item_expired' => 1 ))->result_array();
   }
     /**
+    * get_item_info_by_num_id
+    * 通过宝贝ID获取宝贝信息 
+    */
+    function get_item_info_by_num_id($numIid){
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        $this->topsdk->autoload('ItemGetRequest');
+        $this->topsdk->req->setNumIid($numIid);
+        $this->topsdk->req->setFields("detail_url,num_iid,title,nick,type,cid,seller_cids,props,input_pids,input_str,desc,pic_url,num,valid_thru,list_time,delist_time,stuff_status,location,price,post_fee,express_fee,ems_fee,has_discount,freight_payer,has_invoice,has_warranty,has_showcase,modified,increment,approve_status,postage_id,product_id,auction_point,property_alias,item_img,prop_img,sku,video,outer_id,is_virtual");
+        $result = $this->topsdk->get_data();
+        return $result['item'];
+    }
+    /**
      * get_seller_cats_by_nickname
      * AJAX方法
      * 通过用户昵称获取店铺类别 
      * 参数：通过配置文件获取店铺昵称
      */
-    function get_seller_cats_by_nickname(){
+    function get_seller_cats_by_nickname($nickName){
         $this->load->library('TopSdk', $this->config->item('topapi_config') );
         $this->topsdk->autoload('SellercatsListGetRequest');
         //从配置文件中获取店铺昵称
-        $this->topsdk->req->setNick($this->config->item('nick_name'));
+        //$this->topsdk->req->setNick($this->config->item('nick_name'));
+        //从参数中获取店铺昵称
+        $this->topsdk->req->setNick($nickName);
 
         $result = $this->topsdk->get_data();
         echo json_encode($result);
@@ -1129,5 +1208,107 @@ class Jad_goods_model extends CI_Model {
         $result = $this->topsdk->get_data();
         //注意：在该叶子类目下没有属性信息的时候，要对返回值进行判断，否则会引起错误；
         echo json_encode($result);
-    }	
+    }
+    /**
+     * update_item_info
+     * AJAX方法
+     */
+    function update_item_info(){
+        $price = $this->input->post('price');
+        $num = $this->input->post('num');
+        $title = $this->input->post('title');
+        $desc =  $_POST["desc"];
+        $sellerCats = $this->input->post('sellerCats');
+        $locationCheckbox = $this->input->post('locationBought');
+
+        if($locationCheckbox == 2){
+            $globalType =$this->input->post('globalType');
+            $globalStock =$this->input->post('globalStock');
+            echo $globalType;
+            echo $globalStock;
+        }
+
+        echo html_entity_decode($desc);
+    }
+    /**
+     * update_sku_items
+     * AJAX方法
+     */
+    function update_sku_items(){
+        $numIid = $this->input->post('numIid');
+        $skuPropertiesDel = $this->input->post('skuPropDel');
+        $skuPropertiesEdit = $this->input->post('skuPropEdit');
+        //获取需要删除的sku的sku_properties参数数组
+        $skuPropertiesDelArr = explode("#",$skuPropertiesDel);
+        $skuPropertiesEditArr = explode("#",$skuPropertiesEdit);
+
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        //更新
+        $alertMessage = '';
+        $this->topsdk->autoload('ItemSkuPriceUpdateRequest');
+        for($k = 0; $k < count($skuPropertiesEditArr); $k++){
+            $skuPropertiesEditItemArr = explode(",",$skuPropertiesEditArr[$k]);
+            if ( $skuPropertiesEditItemArr[4] != '' ){
+                //var_dump($skuPropertiesEditItemArr[4]);
+                $this->topsdk->req->setNumIid($numIid);
+                $this->topsdk->req->setProperties($skuPropertiesEditItemArr[0]);
+                $this->topsdk->req->setPrice($skuPropertiesEditItemArr[1]);
+                $this->topsdk->req->setQuantity($skuPropertiesEditItemArr[2]);
+                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
+                //var_dump($result);
+                if ( count($result) == 1){
+                    //操作成功
+                    $alertMessage = $alertMessage.'<p class="">SKU信息更新成功,ID:'.$result['sku']['sku_id'].'</p>';
+                }else{
+                    //操作失败
+                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息更新失败:'.$result['msg'].'</p>';
+                }
+            }
+        }
+        //新增
+        $this->topsdk->autoload('ItemSkuAddRequest');
+        for($k = 0; $k < count($skuPropertiesEditArr); $k++){
+            $skuPropertiesEditItemArr = explode(",",$skuPropertiesEditArr[$k]);
+            if ( $skuPropertiesEditItemArr[4] == '' ){
+                $this->topsdk->req->setNumIid($numIid);
+                $this->topsdk->req->setProperties($skuPropertiesEditItemArr[0]);
+                $this->topsdk->req->setPrice($skuPropertiesEditItemArr[1]);
+                $this->topsdk->req->setQuantity($skuPropertiesEditItemArr[2]);
+                $this->topsdk->req->setOuterId($skuPropertiesEditItemArr[3]);
+                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
+                //需要入库绑定
+                $this->db->where('item_id', $skuPropertiesEditItemArr[3]);
+                $this->db->update('info_product_item', array( 'sku_id' => $result['sku']['sku_id'] , 'item_expired'  => '1' )); 
+                if ( count($result) == 1){
+                    //操作成功
+                    $alertMessage = $alertMessage.'<p class="">新增SKU信息成功,ID:'.$result['sku']['sku_id'].'</p>';
+                }else{
+                    //操作失败
+                    $alertMessage = $alertMessage.'<p class="error_msg">新增SKU信息失败:'.$result['msg'].'</p>';
+                }
+            }
+        }
+        //删除sku，根据item_id来删除
+        if($skuPropertiesDel != ''){
+            $this->topsdk->autoload('ItemSkuDeleteRequest');
+            for($s = 0; $s < count($skuPropertiesDelArr); $s++){
+                $skuPropertiesDelItemArr = explode(",",$skuPropertiesDelArr[$s]);
+                $this->topsdk->req->setNumIid($numIid);
+                $this->topsdk->req->setProperties($skuPropertiesDelItemArr[0]);
+                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
+                $this->db->where('item_id', $skuPropertiesDelItemArr[1]);
+                $this->db->update('info_product_item', array( 'item_expired'  => '2' )); 
+                if ( count($result) == 1){
+                    //操作成功
+                    $alertMessage = $alertMessage.'<p class="">SKU信息删除成功,NUM_ID:'.$result['sku']['num_iid'].'</p>';
+                }else{
+                    //操作失败
+                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息删除失败:'.$result['msg'].'</p>';
+                }
+            }
+        }
+        
+        echo $numIid;
+        echo $alertMessage;
+    }
 }

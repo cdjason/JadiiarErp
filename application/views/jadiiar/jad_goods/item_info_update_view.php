@@ -17,18 +17,18 @@
 <div class="content">
     <div class="header">
         <div class="stats">
-            <p class="stat" id="p_cid"><span class="number">CID:</span><?php echo $productInfo['cid']; ?></p>
-            <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php echo $productInfo['product_id']; ?></p>
-            <p class="stat" ><span class="number">产品名称:</span><?php echo $productInfo['product_title']; ?></p>
+            <p class="stat" id="p_cid"><span class="number">CID:</span><?php  ?></p>
+            <p class="stat" id="product_id"><span class="number">Product_ID:</span><?php  ?></p>
+            <p class="stat" ><span class="number">产品名称:</span><?php  ?></p>
         </div>
 
-        <h1 class="page-title">发布商品信息</h1>
+        <h1 class="page-title">宝贝信息编辑</h1>
     </div>
         
     <ul class="breadcrumb">
         <li><a href="index.html">Home</a> <span class="divider">/</span></li>
-        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_product_items/<?php echo $productInfo['product_id']; ?> ">商品列表</a> <span class="divider">/</span></li>
-        <li class="active">发布商品信息</li>
+        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_product_items/<?php echo $productId;  ?> ">商品列表</a> <span class="divider">/</span></li>
+        <li class="active">宝贝信息编辑</li>
     </ul>
 
     <div class="container-fluid">
@@ -37,8 +37,8 @@
         <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
         <div class="row-fluid">
             <div class="span2">
-                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  发布</button>
-                <input type="hidden" name="publish_product_items" value="1" />
+                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  确定</button>
+                <input type="hidden" name="update_item_info" value="1" />
             </div>
             <div class="span1" id = "ajaxPic">
             </div>
@@ -47,129 +47,32 @@
         <div class="well">
             <div class="row-fluid">
                 <div class="span2" ><b>宝贝图片</b></div>
-                <div class="span10" ><img class="img-rounded" src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($productInfo['product_img_url'],'sq');?>"  ></div>
+                <div class="span10" ><img class="img-rounded" src="<?php echo $itemInfo['pic_url'];?>"  ></div>
             </div>
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝类型</b></div>
-                <div class="span10" >
-                     <input type="radio" name="stuffStatus" id="optionsRadios1" value="new" checked>全新&nbsp;&nbsp;&nbsp;&nbsp;
-                     <input type="radio" name="stuffStatus" id="optionsRadios2" value="second">二手
-                </div>
-            </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>宝贝标题</b></div>
                 <div class="span10" >
-                     <input type="text" name="product_title" id = "product_title" value = "<?php echo $productInfo['product_title'];?>"/>
+                     <input type="text" name="product_title" id = "product_title" value = "<?php echo $itemInfo['title'];?>"/>
                 </div>
             </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>一口价</b></div>
                 <div class="span10" >
-                     <input type="text" name="price" id = "product_price" placeholder="注意价格区间位于sku属性之间" />
+                     <input type="text" name="price" id = "product_price" placeholder="注意价格区间位于sku属性之间" value = "<?php echo $itemInfo['price'];?>"/>
                 </div>
             </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>宝贝数量</b></div>
                 <div class="span10" >
-                     <input type="text" name="product_num" id = "product_num" placeholder="若销售属性有值，则为sku之和" />
+                     <input type="text" name="product_num" id = "product_num" placeholder="若销售属性有值，则为sku之和" value = "<?php echo $itemInfo['price'];?>"/>
                 </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝SKU信息</b></div>
-                <div class="span10" >
-                    <table id="sku_items_table" class="table table-bordered table-condensed">
-                        <thead>
-                            <tr>
-                                <td>商品编号</td>
-                                <td>色卡</td>
-                                <td>SKU描述</td>
-                                <td>价格</td>
-                                <td>数量</td>
-                                <td>选择</td>
-                            </tr>
-                        </thead>
-                        <?php if (!empty($productItemsInfo)) { ?>
-                        <tbody>
-                            <?php foreach ($productItemsInfo as $pItemInfo) { ?>
-                            <tr>
-                                <td><?php echo $pItemInfo['item_id'];?></td>
-                                <td><?php echo $pItemInfo['item_colour'];?></td>
-                                <td id = "<?php echo $pItemInfo['property_alias'];?>">
-                                    <?php if (!empty($pItemInfo['property_alias'])){
-                                                $skuDescStr = ''; 
-                                                $skuDesc = explode(";",$pItemInfo['property_alias']);
-                                                for($i = 0 ; $i < count($skuDesc) ; $i++){
-                                                    $skuItemDesc = explode(":",$skuDesc[$i]);
-                                                    $skuDescStr = $skuDescStr.' & '.$skuItemDesc[2]; 
-                                                }
-                                                $skuDescStr = substr($skuDescStr,3);
-                                                echo $skuDescStr;
-                                          }
-                                    ?>
-                                </td>
-                                <td><input type = "text" name = "sku_item_price" /></td>
-                                <td><input type = "text" name = "sku_item_num" /></td>
-                                <td><input type="checkbox" name="publish_item_checkbox" value="1" /></td>
-                            </tr>
-                            <?php } ?>
-                        </tbody>
-                        <?php } ?>
-                    </table>
-                </div>
-            </div>              
-            <div class="row-fluid" id = 'location_checkbox' name = 'location_checkbox'>
-                <div class="span2" ><b>采购地</b></div>
-                <div class="span10" >
-                     <input type="radio" name="location_bought" id="location_bought" value="1" checked>国内&nbsp;&nbsp;&nbsp;&nbsp;
-                     <input type="radio" name="location_bought" id="location_bought" value="2">海外及港澳台
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2"><b>必选属性</b></div>
-                <div class="span10" id="enum-must-props"></div>
-            </div>
-            <div class="row-fluid">
-                <div class="span2"><b>上架店铺</b></div>
-                <div class="span10">
-                <select name = "publish_shop" id = "publish_shop">
-                <option value="">--请选择--</option>
-                <option value="肥肥9089">CJ测试用，勿选</option>
-                <option value="jadiiar">JADIIAR 总店</option>
-                <option value="siiena">SIIENA 折扣店</option>
-                </select>
-                </div>
-            </div>
-            <div class="row-fluid">
-                <div class="span2" ><b></b></div>
-                <div class="well span10" style="max-height: 200px;overflow-y: scroll;" id = "seller_cats" >
-
-                </div>
-  
-  
             </div>              
             <div class="row-fluid">
                 <div class="span2" ><b>商品描述</b></div>
-                <div class="span10" ><textarea id="item_desc" name="item_desc"></textarea></div>
+                <div class="span10" ><textarea id="item_desc" name="item_desc"><?php echo $itemInfo['desc'];?></textarea></div>
             </div>              
         </div>
 
-        <input type="hidden" name = "product_id" value = '<?php echo $productInfo['product_id']; ?>' />
-        <input type="hidden" name = "cid" id= "cid" value = '<?php echo $productInfo['cid']; ?>' />
-        <input type="hidden" name = "must_props" id = "must_props" value = '' />
-        <input type="hidden" name = "product_item_props" id = "product_item_props" />
-        <input type="hidden" name = "product_props" id = "product_props" value = '<?php echo $productInfo['props']; ?>' />
-        <input type="hidden" name = "product_inputs_str" id = "product_inputs_str" value = '<?php echo $productInfo['inputs_str']; ?>' />
-        <input type="hidden" name = "product_inputs_pids" id = "product_inputs_pids" value = '<?php echo $productInfo['inputs_pids']; ?>' />
-        <input type="hidden" name = "img_remote_url" value = '<?php echo $productInfo['product_img_url']; ?>' />
-        <input type="hidden" name = "sku_properties" id= "sku_properties" />
-        <input type="hidden" name = "sku_quantities" id= "sku_quantities" />
-        <input type="hidden" name = "sku_prices" id= "sku_prices" />
-        <input type="hidden" name = "sku_outer_ids" id= "sku_outer_ids" />
-        <input type="hidden" name = "product_items_num" id= "product_items_num" />
-        <input type="hidden" name = "item_props" id= "item_props" />
-        <input type="hidden" name = "props_property_alias" id = "props_property_alias" />
-        <input type="hidden" name = "format_item_desc" id = "format_item_desc" />
-        <input type="hidden" name = "seller_cats_str" id = "seller_cats_str" />
 	    <?php echo form_close();?>
         <?php $this->load->view('includes/jad_footer'); ?>  
         </div>
@@ -652,19 +555,37 @@ function creatSellerCatsCheckFrom(o){
              jsObject = jsObject.seller_cats.seller_cat;
              //alert(sellerCats.length);
 
+/*
+             var sel = document.createElement('SELECT');
+             sel.setAttribute('name', 'cat_' + c_id);
+             sel.setAttribute('id', 'cat_' + c_id);
+             sel.setAttribute('class', 'input-xlarge');
+             var op = document.createElement('OPTION');
+             op.setAttribute('value', '');
+             op.innerHTML = '--请选择--';
+             sel.appendChild(op);
+ 
+ */
              //对于每一个类目要进行判断，如果为叶子类目，则存在checkbox，若为父亲类目，则不存在checkbox
              //从返回的类别数据可以发现，子类目和父类目是紧靠在一起的，且只有二级分类
+
              for (var i=0; i < jsObject.length - 1; i++) {
+
                  var checkLabel = document.createElement('label');
                  checkLabel.setAttribute('class', 'checkbox');
                  checkLabel.appendChild(document.createTextNode(jsObject[i].name));
+
                  if (jsObject[i].parent_cid == 0 && jsObject[i+1].parent_cid !=0 ){//说明该节点为拥有子节点的父节点，没有checkbox
                      //加入未offset的checkbox
                  }else{//说明该节点存在checkbox
                      if (jsObject[i].parent_cid == 0){
                          checkLabel.setAttribute('style', 'padding-left:1cm;');
+                         //checkNameDiv.setAttribute('class', 'span1');
+                         //checkElementDiv.setAttribute('class', 'span11');
                      }else{
                          checkLabel.setAttribute('style', 'padding-left:2cm;');
+                         //checkNameDiv.setAttribute('class', 'span3 offset1');
+                         //checkElementDiv.setAttribute('class', 'span8');
                      }
                      var checkBox = document.createElement('input');
                      checkBox.setAttribute('type', 'checkbox');
@@ -678,6 +599,7 @@ function creatSellerCatsCheckFrom(o){
              var checkLabel = document.createElement('label');
              checkLabel.setAttribute('class', 'checkbox');
              checkLabel.appendChild(document.createTextNode(jsObject[i].name));
+
              if (jsObject[jsObject.length-1].parent_cid == 0){
                  checkLabel.setAttribute('style', 'padding-left:1cm;');
              }else{
@@ -688,9 +610,12 @@ function creatSellerCatsCheckFrom(o){
              checkBox.id = jsObject[i].cid;
              checkBox.value = jsObject[i].cid;
              checkLabel.appendChild(checkBox);
+
              $("#seller_cats")[0].appendChild(checkLabel);
+
              $("#form_btn")[0].disabled = '';
              $("#ajaxPic")[0].innerHTML = '';
+         
         },
         error: function(){
         alert("获取数据失败，请与网站管理员联系！");
@@ -699,147 +624,9 @@ function creatSellerCatsCheckFrom(o){
 }
 
 $(document).ready(function(){
-    document.getElementById('publish_shop').onchange = function(){creatSellerCatsCheckFrom(this)};
-    
-
     //为输入框绑定插件
     $("#item_desc").cleditor(); 
-    
-    //为选择采购地绑定响应时间
-    $("input[type='radio'][name='location_bought']").change(
-        function() {
-            var $selectedvalue = $("input[type='radio'][name='location_bought']:checked").val();
-            if ($selectedvalue == 1) {
-                //清除选择框
-                $("#globalStockDiv")[0].outerHTML = '';
-            }
-            else {
-                //在采购地的后面加上选择附加选择框，并调用接口，获取国家、地区值
-                var propDiv = document.createElement('div');
-                propDiv.id = 'globalStockDiv';
-                propDiv.setAttribute('class', 'row-fluid');
-                var propDivName = document.createElement('div');
-                propDivName.setAttribute('class', 'span2');
-                var propDivValue = document.createElement('div');
-                propDivValue.setAttribute('class', 'span10');
-
-                var propSubDiv1 = document.createElement('div');
-                propSubDiv1.setAttribute('class', 'row-fluid');
-                var propSubDivName1 = document.createElement('div');
-                propSubDivName1.appendChild(document.createTextNode('国家/地区'));
-                propSubDivName1.setAttribute('class', 'span2');
-                var propSubDivValue1 = document.createElement('div');
-                propSubDivValue1.setAttribute('class', 'span10');
-                propSubDiv1.appendChild(propSubDivName1);
-                propSubDiv1.appendChild(propSubDivValue1);
-                //设置select中的值
-
-                var sel = document.createElement('SELECT');
-                sel.setAttribute('name', 'sel_global_stock');
-                sel.setAttribute('id', 'sel_global_stock');
-                sel.setAttribute('class', 'span6');
-
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '');
-                op.innerHTML = '--请选择国家或地区--';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '美国');
-                op.innerHTML = '美国';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '香港');
-                op.innerHTML = '香港';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '日本');
-                op.innerHTML = '日本';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '英国');
-                op.innerHTML = '英国';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '新西兰');
-                op.innerHTML = '新西兰';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '德国');
-                op.innerHTML = '德国';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '韩国');
-                op.innerHTML = '韩国';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '荷兰');
-                op.innerHTML = '荷兰';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '澳洲');
-                op.innerHTML = '澳洲';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '法国');
-                op.innerHTML = '法国';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '意大利');
-                op.innerHTML = '意大利';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '台湾');
-                op.innerHTML = '台湾';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '澳门');
-                op.innerHTML = '澳门';
-                sel.appendChild(op);
-                var op = document.createElement('OPTION');
-                op.setAttribute('value', '其他');
-                op.innerHTML = '其他';
-                sel.appendChild(op);
-                propSubDivValue1.appendChild(sel);
-
-                var propSubDiv2 = document.createElement('div');
-                propSubDiv2.setAttribute('class', 'row-fluid');
-                var propSubDivName2 = document.createElement('div');
-                propSubDivName2.appendChild(document.createTextNode('库存类型'));
-                propSubDivName2.setAttribute('class', 'span2');
-                var propSubDivValue2 = document.createElement('div');
-                propSubDivValue2.setAttribute('class', 'span10');
-                propSubDiv2.appendChild(propSubDivName2);
-                propSubDiv2.appendChild(propSubDivValue2);
-                //增加radiobox
-                var radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'global_type';
-                radio.id = 'global_type';
-                radio.value = '1';
-                propSubDivValue2.appendChild(radio);
-                propSubDivValue2.appendChild(document.createTextNode('现货'));
-
-                var radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'global_type';
-                radio.id = 'global_type';
-                radio.value = '2';
-                propSubDivValue2.appendChild(radio);
-                propSubDivValue2.appendChild(document.createTextNode('代购'));
-                
-                propDiv.appendChild(propDivName);
-                propDiv.appendChild(propDivValue);
-
-                propDivValue.appendChild(propSubDiv1);
-                propDivValue.appendChild(propSubDiv2);
-
-                insertAfter(propDiv,$("#location_checkbox")[0]);
-
-            }
-    });
-    
-    createPropsForm(<?php echo $productInfo['cid']; ?>);
 });
 </script>  
 </body>
-</html>
+

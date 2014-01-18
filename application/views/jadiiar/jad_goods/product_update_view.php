@@ -25,7 +25,7 @@
     </div>
     <ul class="breadcrumb">
         <li><a href="index.html">Home</a> <span class="divider">/</span></li>
-        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_products">产品列表</a> <span class="divider">/</span></li>
+        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_products/order_by/num_iid/order_parameter/desc">产品列表</a> <span class="divider">/</span></li>
         <li class="active">更新产品信息</li>
     </ul>
 
@@ -43,9 +43,25 @@
             </div></br>
 
             <div class="well">
+
                 <div class="row-fluid">
-                    <div class="span2" ><b>产品标题</b></div>
-                    <div class="span10" ><input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" value = "<?php echo $productInfo['product_title']; ?>" /></div>
+                    <div class="span2" ><b>产品名称</b></div>
+                    <div class="span10" >
+                        <input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" value = "<?php echo $productInfo['product_title']; ?>" />
+                    </div>
+                </div><br>              
+                <div class="row-fluid">
+                    <div class="span2" ><b>产品品牌</b></div>
+                    <div class="span10" >
+                        <select name = "product_brand" id = "product_brand">
+                        <option value = "">--请选择--</option>
+                        <?php for ( $i =0;$i<count($brandList);$i++ ){ 
+                        ?>
+                        <option value = "<?php echo $brandList[$i]; ?>"><?php echo $brandList[$i]; ?></option>
+                        <?php } ?> 
+
+                        </select>
+                    </div>
                 </div><br>              
                 <div class="row-fluid">
                     <div class="span2" ><b>产品图片URL</b></div>
@@ -57,7 +73,8 @@
                 </div>              
             </div>
             <input type="hidden" name="cid" id="cid"/>
-            <input type="hidden" name="num_iid" value="<?php echo $productInfo['num_iid']; ?>"/>
+            <input type="hidden" name="inputs_pids" value = "<?php echo $productInfo['inputs_pids']; ?>"/>
+            <input type="hidden" name="inputs_str" value = "<?php echo $productInfo['inputs_str']; ?>"/>
             <?php echo form_close();?>
             <?php $this->load->view('includes/jad_footer'); ?>  
         </div>
@@ -66,6 +83,10 @@
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
 function checkAll(form){
+    if( $("#product_brand")[0].value == ''){
+        alert('尚未选择产品品牌，请选择!');
+        return false;
+    }
 
 }
 /*
@@ -83,6 +104,12 @@ $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
 });
  */
 
+$(document).ready(function(){
+    $('#product_brand')[0].value = "<?php echo $productInfo['product_brand']; ?>";
+    if ($('#product_brand')[0].options.length == 1){
+        alert('获取淘宝店铺品牌信息失败，请检查网络连接!');
+    }
+});
 </script>  
 </body>
 </html>

@@ -25,7 +25,7 @@
     </div>
     <ul class="breadcrumb">
         <li><a href="index.html">Home</a> <span class="divider">/</span></li>
-        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_products">产品列表</a> <span class="divider">/</span></li>
+        <li><a href="<?php echo $base_url;?>index.php/jad_goods/manage_products/order_by/num_iid/order_parameter/desc">产品列表</a> <span class="divider">/</span></li>
         <li class="active">新增产品信息</li>
     </ul>
 
@@ -55,12 +55,21 @@
 
             <div class="well">
                 <div class="row-fluid">
-                    <div class="span2" ><b>产品标题</b></div>
+                    <div class="span2" ><b>产品名称</b></div>
                     <div class="span10" ><input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" /></div>
                 </div><br>              
                 <div class="row-fluid">
-                    <div class="span2" ><b>店铺类别</b></div>
-                    <div class="span10" id = 'seller-cats' ></div>
+                    <div class="span2" ><b>品牌</b></div>
+                    <div class="span10" id = 'sub_branch_brand' >
+                    <select name = "product_brand" id = "product_brand">
+                    <option value = "">--请选择--</option>
+                    <?php for ( $i =0;$i<count($brandList);$i++ ){ 
+                    ?>
+                    <option value = "<?php echo $brandList[$i]; ?>"><?php echo $brandList[$i]; ?></option>
+                    <?php } ?> 
+
+                    </select>
+                    </div>
                 </div>  <br>            
                 <div class="row-fluid">
                     <div class="span2" ><b>产品图片URL</b></div>
@@ -72,7 +81,7 @@
                 </div>              
             </div>
             <input type="hidden" name="cid" id="cid"/>
-            <input type="hidden" name="seller_cats" id="seller_cats"/>
+            <input type="hidden" name="cid_name_chain" id="cid_name_chain"/>
             <input type="hidden" name="props" id="props" />
             <input type="hidden" name="input_str" id="input_str"/>
             <input type="hidden" name="input_pids" id="input_pids"/>
@@ -86,29 +95,52 @@
 <script>
 //提交获取属性链pid:vid
 function checkAll(form){
+
     if( $("#cid")[0].value == ''){
         alert('尚未选择商品叶子类目，请选择!');
+        return false;
+    }
+    if( $("#product_brand")[0].value == ''){
+        alert('尚未选择产品品牌，请选择!');
         return false;
     }
     var formElements = form.elements;
     var propStr = '';
     var inputStr = ''; 
     var inputPidsStr = ''; 
-    var sellerCats = '';
+
+    //获取所有的类目信息名称
+    var oJu = $("#parentCidDiv")[0].childNodes[0];
+    oJu = $(oJu);
+    var cidName = '';
+    while(oJu[0]!=undefined){
+        var temp = oJu[0];
+        cidName = cidName + ',' + oJu[0].options[oJu[0].selectedIndex].text; 
+        oJu = oJu.next();
+    }
+    $("#cid_name_chain")[0].value = cidName.substr(1); 
+
     //遍历关键属性DIV下的各个属性div，除了取值以外，还要判断是否存在那种未选择、未填写的情况
     var prop_divs = $("#enum-one-props")[0];
 	for (var j=0;j<prop_divs.childNodes.length;j++) {
         //若存在input,那么就把pid与vid放入input pid与str中
         var prop_div = prop_divs.childNodes[j];
         if(prop_div.childNodes[1].childNodes[0].nodeName == 'INPUT'){
-            if(prop_div.childNodes[1].childNodes[0].value == ''){
-                alert('关键属性不能有未输入的项');
-                return false;
+            //当关键属性为输入框时
+            //若该关键属性为品牌时，直接去品牌的选项处获取值；否则，则为普通情况处理
+            if ( prop_div.childNodes[1].childNodes[0].id.substr(6) == '20000' ){
+                prop_div.childNodes[1].childNodes[0].value = $("#product_brand")[0].value;
+            }else{
+                if(prop_div.childNodes[1].childNodes[0].value == ''){
+                    alert('关键属性不能有未输入的项');
+                    return false;
+                }
             }
             inputStr += ',' + prop_div.childNodes[1].childNodes[0].value;
             inputPidsStr += ',' + prop_div.childNodes[1].childNodes[0].id.substr(6);
         }
         if(prop_div.childNodes[1].childNodes[0].nodeName == 'SELECT'){
+            //当关键属性为下拉列表时
             if(prop_div.childNodes[1].childNodes[0].value == ''){
                 alert('关键属性不能有未选择的项');
                 return false;
@@ -120,20 +152,11 @@ function checkAll(form){
         }
 	}
 
-    //对店铺类目的选择情况进行处理，可以选，也可以不选
-    for ( var i=0;i<$("#seller-cats")[0].childNodes.length;i++){
-        if ($("#seller-cats")[0].childNodes[i].value != ''){
-            sellerCats = sellerCats + ',' +$("#seller-cats")[0].childNodes[i].value;
-        }
-    }
     inputStr = inputStr.substr(1);
     inputPidsStr = inputPidsStr.substr(1);
     $("#props")[0].value = propStr; 
     $("#input_str")[0].value = inputStr; 
     $("#input_pids")[0].value = inputPidsStr; 
-    if (sellerCats != ''){
-        $("#seller_cats")[0].value = sellerCats.substr(1); 
-    }
 }
 //对于关键属性中的子属性进行展示
 function parentPropList(o){
@@ -153,6 +176,13 @@ function parentPropList(o){
 			txt.id = 'input_' + pid;
             txt.setAttribute('class', 'span6');
 			txt.value = '';
+
+            //当为品牌属性的时候，自定义直接readonly
+            //苹果手机壳品牌属性中的自定义的value比较特殊，为20000_型号
+            if ( o.value == '20000' || o.value == '20000_型号' ){
+                $(txt).attr("readonly","readonly")
+            }
+
             //添加作为附加子属性的元素
             var propDiv = document.createElement('div');
             propDiv.id =  o.id + '_subDiv';
@@ -192,7 +222,7 @@ function parentPropList(o){
                 data: "cId=" + $("#cid").val() + "&parentPId=" + pid,
                 url: "<?php echo base_url();?>index.php/jad_goods/get_child_itemprops",
                 success: function(prop_data){
-                    var prop_data = eval('('+prop_data+')');
+                    var prop_data = top_error_check(prop_data);
                     if(prop_data==''){ 
                         $("#form_btn")[0].disabled = '';
                         $("#ajaxPic")[0].innerHTML = '';
@@ -287,7 +317,7 @@ function createPropsForm(cid) {
         data: "parentId=" + cid,
         url: "<?php echo base_url();?>index.php/jad_goods/get_itemprops_by_cid",
         success: function(data){
-            var props = eval('('+data+')');
+            var props = top_error_check(data);
             if(props==''){ 
                 $("#form_btn")[0].disabled = '';
                 $("#ajaxPic")[0].innerHTML = '';
@@ -317,7 +347,7 @@ function createPropsForm(cid) {
                             url: "<?php echo base_url();?>index.php/jad_goods/get_propvalues",
                             async: false,
                             success: function(prop_data){
-                               var propvalues = eval('(' + prop_data + ')');
+                               var propvalues = top_error_check(prop_data);
                                if(propvalues!=''){
                                    propvalues = propvalues.prop_values.prop_value;
                                    var j;
@@ -360,14 +390,23 @@ function createPropsForm(cid) {
                         propDivName.appendChild(document.createTextNode(props[i].name+"："));
                         propDivValue.appendChild(sel);
 
-                        //var propSpan = document.createElement('div');
-                        //propSpan.id = 'pid_' + props[i].pid + '_span';
-                        //propSpan.class = "row-fluid";
-
                         propDiv.appendChild(propDivName);
                         propDiv.appendChild(propDivValue);
                         $("#enum-one-props")[0].appendChild(propDiv);
                         document.getElementById('pid_' + props[i].pid).onchange = function(){parentPropList(this)};
+
+                        //当为品牌属性的时候，默认为自定义
+                        if ( props[i].pid == '20000' ){
+                            //苹果手机壳品牌属性中的自定义的value比较特殊，为20000_型号
+                            if ( props[i].name == '保护壳/套品牌'){
+                                sel.value = '20000_型号';
+                            }else{
+                                sel.value = props[i].pid;
+                            }
+                            $(sel).attr("disabled","disabled")
+                            parentPropList(sel);
+                        }
+
                     }else if ('0' == props[i].parent_pid){
                         //获取非枚举型(即input=text)的关键属性
                         var txt = document.createElement('input');
@@ -376,7 +415,6 @@ function createPropsForm(cid) {
                         txt.id = 'input_' + props[i].pid;
                         txt.setAttribute('class', 'span6');
                         txt.value = '';
-                        //txt.onblur = 'javascript:submitDate(this);';
                         //当为货号或者款式input的时候，需要复制页面上的product_hidd_id,且不能编辑
                         if ( props[i].pid == '1632501' ){
                             txt.value = $("#product_hidd_id")[0].value;
@@ -493,7 +531,7 @@ function createSellerCidSelect(c_id)
          type:"post",
          url: "<?php echo base_url();?>index.php/jad_goods/get_seller_cats_by_nickname",
          success: function(data){
-             var jsObject = eval('('+data+')');
+             var jsObject = top_error_check(data);
              jsObject = jsObject.seller_cats.seller_cat;
              //alert(sellerCats.length);
 
@@ -520,7 +558,7 @@ function createSellerCidSelect(c_id)
              }
              sel.onchange = function(){childSellerCidList(this, c_id);};
              if (j != 0){
-                 $("#seller-cats")[0].appendChild(sel);
+                 $("#sub_branch_brand")[0].appendChild(sel);
              }
             $("#form_btn")[0].disabled = '';
             $("#ajaxPic")[0].innerHTML = '';
@@ -531,8 +569,31 @@ function createSellerCidSelect(c_id)
         }
      }); 
 }
+//对ajax访问TOP平台的返回错误代码进行检查，及时反馈错误信息
+/*访问成功的返回数据一般为一个长度为1的二维数组,json表示如下：
+* 例：{"sku":{"iid":234556,"num_iid":123456}}
+*访问错误的返回数据一般为一个长度为3或者4的一维数组，code、msg、sub_code、sub_msg
+*有些有sub_msg，有些没有；具体原因目前不详
+*/
+function top_error_check(msg){
+     var jsObject = eval('('+msg+')');
+     //存在msg即为错误返回
+     if ( jsObject.code != undefined ){
+         if ( jsObject.sub_msg != undefined ){
+             //若存在子错误码，就显示子错误码，否则显示错误码
+             alert(jsObject.sub_msg);
+         }else{
+             alert(jsObject.msg);
+         }
+         return false;
+     }
+     //否则就正常执行程序
+     return jsObject;
+
+}
 
 //创建类目选择的下拉菜单，参数为parent_id
+//其实只需要品牌类目就可以了
 function createCidSelect(parent_id) {
 
     //对提交按钮做出处理
@@ -547,8 +608,7 @@ function createCidSelect(parent_id) {
      data: "parentId=" + parent_id,
      url: "<?php echo base_url();?>index.php/jad_goods/get_itemcats_by_parent_id",
      success: function(data){
-         //alert(data);
-         var jsObject = eval('('+data+')');
+         var jsObject = top_error_check(data);
          jsObject = jsObject.item_cats.item_cat;
 
 	     var sel = document.createElement('SELECT');
@@ -587,7 +647,8 @@ $(document).ready(function(){
     createCidSelect(0);
     //页面启动的时候，就去调用增加店铺类目选择下拉菜单的方法，只不过传入参数为0，即读取一级店铺分类,该方法暂时不用，结合多店铺时再启用
     //createSellerCidSelect(0);
-    
+    //创建各分店名称下拉
+    //createSubBranchSelect();
 
     /*
 $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
@@ -608,6 +669,3 @@ $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
 </script>  
 </body>
 </html>
-
-
-

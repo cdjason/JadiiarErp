@@ -12,15 +12,16 @@ $config['topapi_session_key'] = '6102b062f7c9fd1f37bf6518267ecdf9503d543686b46b1
 //********************************************************************************************
 
 $config['topapi_config'] = array(
-    'app_key'=>'21714229', 
-    'secret_key'=>'d66487402bf81bdeaa1f085f3aa24882',
-    //'app_key'=>'21713781', 
-    //'secret_key'=>'a86e8f31f2e72fa76a081ca3495a9023',
+    //'app_key'=>'21714229', 
+    //'secret_key'=>'d66487402bf81bdeaa1f085f3aa24882',
+    'app_key'=>'21713781', 
+    'secret_key'=>'a86e8f31f2e72fa76a081ca3495a9023',
     //'app_key'=>'21669164', 
     //'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
 );
+$config['topapi_session_key'] = '61027062875f471e03547688e335ec6c6f8036f0fa73344450669192';
 
-$config['topapi_session_key'] = '6100c13de8aa0b22c5e8a110a483807e04e653954e757bc372474303';
+//$config['nick_name'] = 'siiena';
 $config['nick_name'] = 'jadiiar';
 
 //此处定义了分页的条目数量

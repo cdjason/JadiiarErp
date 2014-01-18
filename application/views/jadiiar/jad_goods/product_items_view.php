@@ -38,7 +38,7 @@
 <?php if($productInfo['num_iid'] == ''){ ?>
    <a href="<?php echo $base_url;?>index.php/jad_goods/publish_product_items/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-road"></i> 宝贝发布</a>
 <?php }else{ ?>
-   <a href="<?php echo $base_url;?>index.php/jad_goods/publish_sku_items/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-road"></i> 宝贝SKU信息设置</a>
+   <a href="<?php echo $base_url;?>index.php/jad_goods/publish_sku_items/<?php echo $productId;?>" class="btn btn-primary" ><i class="icon-road"></i> 编辑宝贝信息</a>
 <?php } ?>
 
 <div class="btn-group">
