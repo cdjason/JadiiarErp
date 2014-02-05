@@ -86,7 +86,7 @@
 									<?php echo $supplier['suppl_note'];?>
 								</td>							
                 			    <td style="display:<?php echo ($IsBuyer) ? "none" : "";  ?> ">
-									<?php echo $supplier['upro_first_name'].' '.$supplier['upro_last_name'];?>
+									<?php echo $supplier['upro_full_name'];?>
 								</td>	               
                 		
 								<td>

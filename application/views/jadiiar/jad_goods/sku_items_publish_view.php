@@ -102,7 +102,7 @@
         </div>
 
 
-        <?php $attributes = array('id' => 'test_form','class' => 'form-horizontal','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
+        <?php $attributes = array('id' => 'item_update_form','class' => 'form-horizontal','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
 <div class="control-group">
     <label class="control-label" for="product_price">一口价</label>
     <div class="controls">
@@ -118,7 +118,7 @@
 <div class="control-group">
     <label class="control-label" for="product_title">宝贝标题</label>
     <div class="controls">
-        <input type="text" name="product_title" value="<?php echo $itemInfo['title'];?>" id="product_title" class="span12" >
+        <input type="text" name="product_title" value="<?php echo $itemInfo['title'];?>" id="product_title" class="span6" >
     </div>
 </div>
 <div class="control-group" id="location_bought_div">
@@ -185,127 +185,10 @@
 </div>
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
-Array.prototype.max = function(){ 
-    return Math.max.apply({},this) 
-} 
-Array.prototype.min = function(){ 
-    return Math.min.apply({},this) 
-} 
+//对输入的宝贝信息数据进行逻辑校验，并从UI中获取店铺类目、非关键属性的信息，以备后台处理
+function checkAll(form){
 
-//ajax方法，更新sku信息
-function update_sku_items(){
-    var ajaxPic = document.createElement('img');
-    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
-    $("#ajaxPic")[0].appendChild(ajaxPic);
-    //遍历sku_item_table，获取sku相关参数
-    var sku_properties_for_del = "";
-    var sku_properties = "";
-    var sku_property_alias = "";
-    var item_props = "";
-    var sku_quantities = "";   
-    var sku_prices = "";
-    var sku_outer_ids = "";
-    var product_items_num = 0;
-    var skuPropValues = $("#sku_items_table")[0];
-    var propsArray = new Array();
-
-    var sku_properies_for_edit_array = new Array();
-    var sku_properies_for_del_array = new Array();
-    //防止对没有销售属性的产品进行sku表的遍历 
-    if( skuPropValues.tBodies.length > 0 ){
-        //对sku属性列表进行遍历，获取需要更新的sku的详细值，获取需要删除的sku的id值
-        for(var i = 0 ; i < skuPropValues.tBodies[0].rows.length ; i++ ){
-            //获取需要更新的sku的详细值，必须要checked以后的才可以发布
-            if (skuPropValues.tBodies[0].rows[i].cells[skuPropValues.tBodies[0].rows[i].cells.length - 1].childNodes[0].checked) {
-                //对checked的销售属性的输入信息进行验证，目前只设置了判空验证
-                if( !isfloat( skuPropValues.tBodies[0].rows[i].cells[3].childNodes[0].value )  || !checkNum( skuPropValues.tBodies[0].rows[i].cells[4].childNodes[0].value )){
-                    alert("宝贝SKU的价格信息必须是最多两位小数的正实数，数量信息必须是正整数!");
-                    return false;
-                } 
-                //获取outer_id
-                sku_outer_ids = sku_outer_ids + "," + skuPropValues.tBodies[0].rows[i].cells[0].innerText;
-                //获取sku价格
-                sku_prices = sku_prices + "," + skuPropValues.tBodies[0].rows[i].cells[3].childNodes[0].value;
-                //pricesArray.push(skuPropValues.tBodies[0].rows[i].cells[3].childNodes[0].value); 
-                //获取sku数量
-                sku_quantities = sku_quantities + "," + skuPropValues.tBodies[0].rows[i].cells[4].childNodes[0].value;
-                //设置宝贝总的数量
-                product_items_num += parseInt(skuPropValues.tBodies[0].rows[i].cells[4].childNodes[0].value);
-                //props属性值需要重新提取，不能用单条item中的iprop
-                var propsArr = skuPropValues.tBodies[0].rows[i].cells[2].id.split(";");
-                var sku_property = '';
-                for (var j = 0; j < propsArr.length; j++){
-                    //取第二个冒号之前的数据
-                    var propsAlias = propsArr[j].split(":");
-                    sku_property = sku_property + ';' + propsAlias[0]+':'+propsAlias[1];
-                    if(propsArray.indexOf(propsAlias[0]+':'+propsAlias[1]) <0 ){
-                        propsArray.push(propsAlias[0]+':'+propsAlias[1]);
-                        item_props = item_props + ';' + propsAlias[0]+':'+propsAlias[1];
-                        sku_property_alias = sku_property_alias + ';' + propsArr[j];
-                    }
-                }
-                sku_property = sku_property.substr(1);
-                //sku_properties = sku_properties.substr(1);
-                sku_properties = sku_properties + ',' + sku_property; 
-                //将完整的sku参数放入该数组,包括sku_id
-                var sku_properies_for_edit_item_array = new Array();
-                sku_properies_for_edit_item_array.push(skuPropValues.tBodies[0].rows[i].cells[0].id,skuPropValues.tBodies[0].rows[i].cells[3].childNodes[0].value,skuPropValues.tBodies[0].rows[i].cells[4].childNodes[0].value,skuPropValues.tBodies[0].rows[i].cells[0].innerText,skuPropValues.tBodies[0].rows[i].cells[5].id);
-
-                sku_properies_for_edit_array.push(sku_properies_for_edit_item_array);
-            }else if( skuPropValues.tBodies[0].rows[i].cells[5].id != '') {
-                //获取需要删除的sku的sku_properies值
-                var sku_properies_for_del_item_array = new Array();
-                sku_properies_for_del_item_array.push(skuPropValues.tBodies[0].rows[i].cells[0].id,skuPropValues.tBodies[0].rows[i].cells[0].innerText); 
-                sku_properies_for_del_array.push(sku_properies_for_del_item_array);
-            }
-
-        }
-        item_props = item_props.substr(1); 
-        sku_property_alias = sku_property_alias.substr(1); 
-        sku_outer_ids = sku_outer_ids.substr(1);
-        sku_properties = sku_properties.substr(1);
-        sku_prices = sku_prices.substr(1);
-        sku_quantities = sku_quantities.substr(1);
-        $("#sku_properies_for_edit")[0].value = sku_properies_for_edit_array.join('#');
-        $("#sku_properties_for_del")[0].value = sku_properies_for_del_array.join('#');
-    }
-
-    //编辑宝贝sku的时候，必须至少选择一个销售属性进行发布
-    if(  sku_outer_ids == '' ){
-        alert("请选择要发布的宝贝SKU，至少选择一项!");
-        return false;
-    }
-    $("#product_item_props")[0].value = item_props;
-    $("#sku_outer_ids")[0].value = sku_outer_ids;
-    $("#sku_properties")[0].value = sku_properties;
-    $("#sku_prices")[0].value = sku_prices;
-    $("#sku_quantities")[0].value = sku_quantities;
-    $("#props_property_alias")[0].value = sku_property_alias;
-    $.ajax({
-        type:"post",
-        data: "skuPropEdit=" + $("#sku_properies_for_edit")[0].value + "&skuPropDel=" + $("#sku_properties_for_del")[0].value + "&numIid=" + $("#num_iid")[0].value,
-        url: "<?php echo base_url();?>index.php/jad_goods/update_sku_items",
-        success: function(prop_data){
-            alert(prop_data);
-
-            $("#sku_set")[0].innerHTML = '';
-            createSkuItemsList($("#product_id")[0].value);
-            $("#ajaxPic")[0].innerHTML = '';
-        },          
-        error: function(){
-            alert("获取数据失败，请与网站管理员联系！");
-        }
-    });
-}
-
-//ajax方法，编辑宝贝信息
-function update_item_info(){
-    //宝贝标题不能为空
-    if( $("#product_title")[0].value == '' || $("#product_title")[0].value.length >30 ){
-        alert("宝贝标题必须填写且小于30个字符!");
-        return false;
-    }
-    //遍历店铺类目，获取选择的类目cid串
+    //遍历店铺类目，获取选择的类目cid串，并验证是否至少选择一个类目
     var seller_cats_str= "";
     var checkDIV = $("#seller_cats")[0];
     for (var i=0;i<checkDIV.childNodes.length;i++){
@@ -317,93 +200,9 @@ function update_item_info(){
     //至少选择一种类别
     if (seller_cats_str == '' ){
         alert("至少选择一项店铺类目!");
-    }
-    //1、宝贝描述信息不能为空
-    if( $("#product_desc")[0].value == '' ){
-        alert('宝贝描述信息不能为空!');
-        return false;
-    }    
-    //2、宝贝价格信息不能为空,且必须为正整数！
-    if (!checkNum($("#product_price")[0].value)){
-        alert('宝贝价格信息不能为空，且必须为正整数!');
-        return false;
-    }else if($("#product_price")[0].value < pricesArray.min() || $("#product_price")[0].value > pricesArray.max()){
-        //3、宝贝价格必须处于sku价格之间
-        alert('宝贝的价格必须处于sku价格之间!');
-        return false;
+		return false;
     }
 
-    //3、宝贝数量信息不能为空,且必须为正整数！
-    if (!checkNum($("#product_num")[0].value)){
-        alert('宝贝数量信息不能为空，且必须为正整数!');
-        return false;
-    }
-    //采购地的地区必须选择
-    var location_bought='';
-    robj=document.getElementsByName("location_bought");
-    for(i=0;i<robj.length;i++){
-        if(robj[i].checked){
-            location_bought = robj[i].value;
-        }
-    }
-
-    var global_type='';
-    var global_stock='';
-    if (location_bought == '2'){
-        //必须选择采购地的地区
-        if ($("#sel_global_stock")[0].value == ''){
-            alert("采购地的地区必须选择!");
-            return false;
-        }
-        global_stock=$("#sel_global_stock")[0].value;
-        gt=document.getElementsByName("global_type");
-        for(i=0;i<gt.length;i++){
-            if(gt[i].checked){
-                global_type = gt[i].value;
-            }
-        }
-    }
-
-    $.ajax({
-        type:"post",
-        data: "price=" + $("#product_price")[0].value + "&num=" + $("#product_num")[0].value + "&title=" + $("#product_title")[0].value + "&sellerCats=" + seller_cats_str + "&desc=" + encodeURIComponent(HTMLEncode($("#product_desc")[0].value)) + "&locationBought=" + location_bought + "&globalType=" + global_type + "&globalStock=" + global_stock,
-        url: "<?php echo base_url();?>index.php/jad_goods/update_item_info",
-        success: function(prop_data){
-            alert(prop_data);
-        },          
-        error: function(){
-            alert("获取数据失败，请与网站管理员联系！");
-        }
-    });
-}
-function checkNum(obj)
-{
-     var re = /^[1-9]\d*$/;
-     //alert(re.test(obj));
-     return re.test(obj);
-} 
-
-function isfloat(oNum){
-    if(!oNum) return false;
-    var strP=/^[0-9]+(.[0-9]{2})?$/;
-    if(!strP.test(oNum)) return false;
-    try{
-        if(parseFloat(oNum)!=oNum) return false;
-    }catch(ex){
-        return false;
-    }
-    return true;
-}
-
-function HTMLEncode( input ){
-    var converter = document.createElement("DIV");
-    converter.innerText = input;
-    var output = converter.innerHTML;
-    converter = null;
-    return output;
-}
-//获取非关键属性中必选属性链pid:vid
-function checkAll(form){
     //遍历sku_item_table，获取sku相关参数
     var sku_properties_for_del = "";
     var sku_properties = "";
@@ -476,26 +275,6 @@ function checkAll(form){
         sku_prices = sku_prices.substr(1);
         sku_quantities = sku_quantities.substr(1);
     }
-    //宝贝标题不能为空
-    if( $("#product_title")[0].value == '' || $("#product_title")[0].value.length >30 ){
-        alert("宝贝标题必须填写且小于30个字符!");
-        return false;
-    }
-    //遍历店铺类目，获取选择的类目cid串
-    var seller_cats_str= "";
-    var checkDIV = $("#seller_cats")[0];
-    for (var i=0;i<checkDIV.childNodes.length;i++){
-        if ( checkDIV.childNodes[i].childNodes.length > 1 && checkDIV.childNodes[i].childNodes[1].checked){
-            seller_cats_str = seller_cats_str + "," + checkDIV.childNodes[i].childNodes[1].value;
-        }
-    }
-    seller_cats_str = seller_cats_str.substr(1);
-    //至少选择一种类别
-    if (seller_cats_str == '' ){
-        alert("至少选择一项店铺类目!");
-        return false;
-    }
-
     //修改宝贝sku的时候，必须至少选择一个销售属性进行发布
     if(  sku_outer_ids == '' ){
         alert("请选择要发布的宝贝SKU，至少选择一项!");
@@ -507,7 +286,7 @@ function checkAll(form){
         alert('宝贝描述信息不能为空!');
         return false;
     }
-    //2、宝贝价格信息不能为空,且必须为正整数！
+    //宝贝价格信息不能为空,且必须为正整数！
     if ( !isfloat($("#product_price")[0].value) ){
         alert('一口价信息必须是最多两位小数的正实数!');
         return false;
@@ -515,36 +294,6 @@ function checkAll(form){
         //3、宝贝价格必须处于sku价格之间
         alert('宝贝的价格必须处于sku价格之间!');
         return false;
-    }
-
-    //3、宝贝数量信息不能为空,且必须为正整数！
-    if (!checkNum($("#product_num")[0].value)){
-        alert('宝贝数量信息不能为空，且必须为正整数!');
-        return false;
-    }
-    //采购地的地区必须选择
-    var location_bought='';
-    robj=document.getElementsByName("location_bought");
-    for(i=0;i<robj.length;i++){
-        if(robj[i].checked){
-            location_bought = robj[i].value;
-        }
-    }
-    var global_type='';
-    var global_stock='';
-    if (location_bought == '2'){
-        //必须选择采购地的地区
-        if ($("#sel_global_stock")[0].value == ''){
-            alert("采购地的地区必须选择!");
-            return false;
-        }
-        global_stock=$("#sel_global_stock")[0].value;
-        gt=document.getElementsByName("global_type");
-        for(i=0;i<gt.length;i++){
-            if(gt[i].checked){
-                global_type = gt[i].value;
-            }
-        }
     }
 
     $("#seller_cats_str")[0].value = seller_cats_str;
@@ -558,8 +307,41 @@ function checkAll(form){
     $("#sku_properties_for_del")[0].value = sku_properies_for_del_array.join('#');
     $("#product_items_num")[0].value = product_items_num;
     $("#format_item_desc")[0].value = HTMLEncode($("#product_desc")[0].value);
- 
+}
 
+
+Array.prototype.max = function(){ 
+    return Math.max.apply({},this) 
+} 
+Array.prototype.min = function(){ 
+    return Math.min.apply({},this) 
+} 
+
+function checkNum(obj)
+{
+     var re = /^[1-9]\d*$/;
+     //alert(re.test(obj));
+     return re.test(obj);
+} 
+
+function isfloat(oNum){
+    if(!oNum) return false;
+    var strP=/^[0-9]+(.[0-9]{2})?$/;
+    if(!strP.test(oNum)) return false;
+    try{
+        if(parseFloat(oNum)!=oNum) return false;
+    }catch(ex){
+        return false;
+    }
+    return true;
+}
+
+function HTMLEncode( input ){
+    var converter = document.createElement("DIV");
+    converter.innerText = input;
+    var output = converter.innerHTML;
+    converter = null;
+    return output;
 }
 function insertAfter(newElement,targetElement) {
     var parent = targetElement.parentNode;
@@ -803,336 +585,6 @@ function createPropsForm(cid) {
             alert("获取数据失败，请与网站管理员联系！");
         }
     }); 
-}
-//AJAX创建商品信息列表
-function createSkuItemsList(pId){
-
-    //$("#form_btn")[0].disabled = 'disabled';
-    var ajaxPic = document.createElement('img');
-    ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
-    $("#ajaxPic")[0].appendChild(ajaxPic);
-
-    //获取商品信息列表
-    $.ajax({
-        type:"post",
-        data: "pId=" + pId,
-        url: "<?php echo base_url();?>index.php/jad_goods/get_product_items_by_pId",
-        success: function(items_data){
-            var itemsList = eval('(' + items_data + ')');
-            //对商品列表进行遍历，并生成TABLE中的元素
-
-            var skuTable = document.createElement('table');//生成table
-            skuTable.id = 'sku_items_table';
-            skuTable.setAttribute('class', 'table table-bordered table-condensed');
-
-            var skuThead = document.createElement('thead');//生成thead
-            var skuTheadTr = document.createElement('tr');//生成tr
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("商品编号")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("色卡")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("sku描述")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("价格")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("数量")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("发布状态")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            var skuTheadTrTd = document.createElement('td');//生成td
-            skuTheadTrTd.appendChild(document.createTextNode("选择")); 
-            skuTheadTr.appendChild(skuTheadTrTd); 
-
-            skuThead.appendChild(skuTheadTr); 
-
-
-            var skuTbody = document.createElement('tbody');//生成tbody
-            for(var j=0;j<itemsList.length;j++){ //循环添加每一行
-                //AJAX获取每种已发布的sku的相关信息
-                var isPublished = false;//
-                var skuData = '';
-                if (itemsList[j].sku_id != '' && itemsList[j].item_expired != '2'){//当商品信息的sku_id不为空且未过期时，说明该商品当前正发布
-                    isPublished = true;
-                $.ajax({
-                    type:"post",
-                    data: "skuId=" + itemsList[j].sku_id + "&numIid=" + itemsList[j].num_iid,
-                    async: false,
-                    url: "<?php echo base_url();?>index.php/jad_goods/get_sku_info_by_sId",
-                    success: function(sku_data){
-                        skuData = eval('(' + sku_data + ')');
-                    },
-                    error: function(){
-                        alert("获取数据失败，请与网站管理员联系！");
-                    }
-                }); 
-                                    
-                }
-                var skuTbodyTr = document.createElement('tr');
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                skuTbodyTrTd.id = itemsList[j].iprops;
-                skuTbodyTrTd.appendChild(document.createTextNode(itemsList[j].item_id)); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                skuTbodyTrTd.appendChild(document.createTextNode(itemsList[j].item_colour)); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                skuTbodyTrTd.id = itemsList[j].property_alias;
-                if ( itemsList[j].property_alias != ''){
-                    var skuDescStr = '';
-                    skuDesc = itemsList[j].property_alias.split(';');
-                    for(var i=0;i<skuDesc.length;i++){
-                        skuItemDesc = skuDesc[i].split(':');
-                        skuDescStr = skuDescStr + ' & ' + skuItemDesc[2];
-                    }
-                    skuDescStr = skuDescStr.substr(3);
-                    skuTbodyTrTd.appendChild(document.createTextNode(skuDescStr)); 
-                }
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                var skuPriceTd = document.createElement('input');
-                skuPriceTd.type = 'text';
-                skuPriceTd.setAttribute('class', 'span6');
-                skuPriceTd.name = 'sku_item_price';
-                if (isPublished) {
-                    skuPriceTd.value = skuData.price;
-                    pricesArray.push(skuData.price); 
-                }
-                skuTbodyTrTd.appendChild(skuPriceTd); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                var skuNumTd = document.createElement('input');
-                skuNumTd.type = 'text';
-                skuNumTd.setAttribute('class', 'span6');
-                skuNumTd.name = 'sku_item_num';
-                if (isPublished) skuNumTd.value = skuData.quantity;
-                skuTbodyTrTd.appendChild(skuNumTd); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                skuTbodyTrTd.id = itemsList[j].sku_id;
-                if (isPublished) 
-                skuTbodyTrTd.appendChild(document.createTextNode('已发布')); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                var skuTbodyTrTd = document.createElement('td');//生成td
-                var skuCheckTd = document.createElement('input');
-                skuCheckTd.type = 'checkbox';
-                //skuCheckTd.setAttribute('class', 'span6');
-                skuCheckTd.name = 'publish_item_checkbox';
-                skuCheckTd.value = "1";
-                if (isPublished) skuCheckTd.checked = "checked";
-                skuTbodyTrTd.appendChild(skuCheckTd); 
-                skuTbodyTr.appendChild(skuTbodyTrTd); 
-                skuTbody.appendChild(skuTbodyTr);
-                //alert(itemsList[j].item_id);
-            }
-            skuTable.appendChild(skuThead);
-            skuTable.appendChild(skuTbody);
-            sku_set.appendChild(skuTable);
-
-            $("#ajaxPic")[0].innerHTML = '';
-        },          
-        error: function(){
-            alert("获取数据失败，请与网站管理员联系！");
-        }
-    }); 
-}
-
-//AJAX创建宝贝信息编辑页面
-function createItemInfoEdit(numIid){
-
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('一口价'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-    var txt = document.createElement('input');//生成div
-    txt.type = "text";
-    txt.name = "product_price";
-    txt.id = "product_price";
-    txt.setAttribute('placeholder', '价格位于商品SKU价格范围之内');
-    controlsDiv.appendChild(txt);
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('数量'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-    var txt = document.createElement('input');//生成div
-    txt.type = "text";
-    txt.name = "product_num";
-    txt.id = "product_num";
-    txt.setAttribute('placeholder', '数量为商品SKU数量之和');
-    controlsDiv.appendChild(txt);
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('宝贝标题'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-    var txt = document.createElement('input');//生成div
-    txt.type = "text";
-    txt.name = "product_title";
-    txt.id = "product_title";
-    txt.setAttribute('class', 'span12');
-    controlsDiv.appendChild(txt);
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-
-    //生成选择宝贝采购地的radio选择框***********************************************************************************/
-    //***********************************************************************************************************/
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.id = "location_bought_div";
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label inline');
-    controlLabel.appendChild(document.createTextNode('采购地'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-
-    var radioLabel = document.createElement('label');
-    radioLabel.setAttribute('class','radio inline');
-    radioLabel.setAttribute('style', 'margin-left:1cm');
-    var radio = document.createElement('input');//生成textarea
-    radio.type = "radio";
-    radio.name = "location_bought";
-    radio.id = "location_bought";
-    radio.value = "1";
-    radio.checked = "checked";
-    radioLabel.appendChild(radio);
-    radioLabel.appendChild(document.createTextNode('国内'));
-    controlsDiv.appendChild(radioLabel);
-
-    var radioLabel = document.createElement('label');
-    radioLabel.setAttribute('class','radio inline');
-    radioLabel.setAttribute('style', 'margin-left:2cm');
-    var radio = document.createElement('input');//生成textarea
-    radio.type = "radio";
-    radio.name = "location_bought";
-    radio.id = "location_bought";
-    radio.value = "2";
-    radioLabel.appendChild(radio);
-    radioLabel.appendChild(document.createTextNode('国外及港澳台'));
-    controlsDiv.appendChild(radioLabel);
-
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-    //生成选择宝贝所属店铺类别的选择框***********************************************************************************/
-    //***********************************************************************************************************/
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('上架店铺'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-
-    var sel = document.createElement('SELECT');
-    sel.setAttribute('name', 'publish_shop');
-    sel.setAttribute('id', 'publish_shop');
-    sel.setAttribute('class', 'span4');
-    sel.setAttribute('disabled', 'disabled');
-
-    var op = document.createElement('OPTION');
-    op.setAttribute('value', '');
-    op.innerHTML = '--请选择--';
-    sel.appendChild(op);
-    var op = document.createElement('OPTION');
-    op.setAttribute('value', '肥肥9089');
-    op.innerHTML = 'CJ测试用，勿选';
-    sel.appendChild(op);
-    var op = document.createElement('OPTION');
-    op.setAttribute('value', 'jadiiar');
-    op.innerHTML = 'JADIIAR 总店';
-    sel.appendChild(op);
-    var op = document.createElement('OPTION');
-    op.setAttribute('value', 'siiena');
-    op.innerHTML = 'SIIENA 姐妹店';
-    sel.appendChild(op);
-    //sel.onchange = function(){creatSellerCatsCheckFrom(this)};
-    controlsDiv.appendChild(sel);
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-    //生成编辑宝贝店铺类别的选择框***********************************************************************************/
-    //***********************************************************************************************************/
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('店铺类别'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls well ');
-    controlsDiv.setAttribute('style', 'max-height: 200px;overflow-y: scroll;');
-    controlsDiv.id = "seller_cats";
-
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-    
-    //生成宝贝描述的textarea框***********************************************************************************/
-    //***********************************************************************************************************/
-    var controlDiv = document.createElement('div');//生成div
-    controlDiv.setAttribute('class', 'control-group');
-    var controlLabel = document.createElement('label');//生成label
-    controlLabel.setAttribute('class', 'control-label');
-    controlLabel.appendChild(document.createTextNode('宝贝描述'));
-    var controlsDiv = document.createElement('div');//生成div
-    controlsDiv.setAttribute('class', 'controls');
-    var textarea = document.createElement('textarea');//生成textarea
-    textarea.name = "product_desc";
-    textarea.id = "product_desc";
-    controlsDiv.appendChild(textarea);
-    controlDiv.appendChild(controlLabel);
-    controlDiv.appendChild(controlsDiv);
-    $("#item_edit_form")[0].appendChild(controlDiv);
-
-   //var ajaxPic = document.createElement('img');
-    //ajaxPic.setAttribute('src', '<?php echo $includes_dir;?>/images/67.gif');
-    //$("#ajaxPic")[0].appendChild(ajaxPic);
-
-    /*/获取商品信息列表
-    $.ajax({
-        type:"post",
-        data: "pId=" + pId,
-        url: "<?php echo base_url();?>index.php/jad_goods/get_product_items_by_pId",
-        success: function(items_data){
-            $("#ajaxPic")[0].innerHTML = '';
-        },          
-        error: function(){
-            alert("获取数据失败，请与网站管理员联系！");
-        }
-});
-*/
-
 }
 
 function creatSellerCatsCheckFrom(nickName){
@@ -1410,6 +862,52 @@ $(document).ready(function(){
 
     //$("input[type='radio'][name='location_bought']").change();
     //createPropsForm(<?php echo $productInfo['cid']; ?>);
+		
+    // 判断价格信息是否大于0
+    jQuery.validator.addMethod("product_price_check", function(value, element) { 
+         value=parseFloat(value);      
+         return this.optional(element) || value>0;       
+    }, "价格必须大于0"); 
+
+    // 判断数量是否为正整数
+    jQuery.validator.addMethod("product_num_check", function(value, element) { 
+         value=parseInt(value);      
+         return this.optional(element) || value>0;       
+    }, "产品数量必须为正整数"); 
+
+    //对表单的输入内容进行初步校验，二次校验在checkAll函数中进行
+    $('#item_update_form').validate({
+        rules: {
+          product_title: {
+            required: true,
+            maxlength: 30
+          },
+          product_price: {
+            required: true,
+            number: true,
+            product_price_check: true
+          },
+          product_num: {
+            required: true,
+            product_num_check: true
+          },
+          publish_shop: {
+            required: true,
+          },
+          sel_global_stock: {
+            required: true
+          }
+        },
+        highlight: function(element) {
+            $(element).closest('.control-group').removeClass('success').addClass('error');
+        },
+        success: function(element) {
+            element
+            .text('OK!').addClass('valid')
+            .closest('.control-group').removeClass('error').addClass('success');
+        }
+    });
+
 });
 </script>  
 </body>

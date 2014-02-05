@@ -131,26 +131,6 @@ class Jad_auth_admin extends CI_Controller {
           } 
 	
 		$this->load->view('jadiiar/jad_admin/user_account_add_view_new',$this->data);
-		
-		/*
-		// Redirect user away from registration page if already logged in.
-		if ($this->flexi_auth->is_logged_in()) 
-		{
-			redirect('auth');
-		}
-		// If 'Registration' form has been submitted, attempt to register their details as a new account.
-		else if ($this->input->post('register_user'))
-		{			
-			$this->load->model('demo_auth_model');
-			$this->demo_auth_model->register_account();
-		}
-		
-		// Get any status message that may have been set.
-		$this->data['message'] = (! isset($this->data['message'])) ? $this->session->flashdata('message') : $this->data['message'];		
-
-		$this->load->view('demo/public_examples/register_view', $this->data);
-		*/
-		
 	}
  	/**
  	 * manage_user_accounts
@@ -215,7 +195,9 @@ class Jad_auth_admin extends CI_Controller {
         {
 			$this->jad_auth_admin_model->change_password($user_id);
         }
-		
+		//获取地域信息
+		$this->data['areas_info'] = $this->jad_global_model->get_areas_info();
+
 		// Get users current data.
 		$sql_where = array($this->flexi_auth->db_column('user_acc', 'id') => $user_id);
 		$this->data['user'] = $this->flexi_auth->get_users_row_array(FALSE, $sql_where);
@@ -475,8 +457,7 @@ class Jad_auth_admin extends CI_Controller {
 		// Get users profile data.
 		$sql_select = array(
 			'upro_uacc_fk', 
-			'upro_first_name', 
-			'upro_last_name',
+			'upro_full_name', 
 			$this->flexi_auth->db_column('user_acc', 'group_id'),
 			$this->flexi_auth->db_column('user_group', 'name')
         );

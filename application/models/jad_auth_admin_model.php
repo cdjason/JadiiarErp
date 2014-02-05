@@ -22,76 +22,53 @@ class Jad_auth_admin_model extends CI_Model {
 	 */
 	function add_user_account()
 	{
-		$this->load->library('form_validation');
-		// Set validation rules.
-		// The custom rules 'identity_available' and 'validate_password' can be found in '../libaries/MY_Form_validation.php'.
-		$validation_rules = array(
-			array('field' => 'register_first_name', 'label' => 'First Name', 'rules' => 'required'),
-			array('field' => 'register_last_name', 'label' => 'Last Name', 'rules' => 'required'),
-			array('field' => 'register_phone_number', 'label' => 'Phone Number', 'rules' => 'required'),
-			array('field' => 'register_email_address', 'label' => 'Email Address', 'rules' => 'required|valid_email|identity_available'),
-			array('field' => 'register_username', 'label' => '用户名', 'rules' => 'required|min_length[4]|identity_available'),
-			array('field' => 'register_password', 'label' => '密码', 'rules' => 'required|validate_password'),
-			array('field' => 'register_confirm_password', 'label' => 'Confirm Password', 'rules' => 'required|matches[register_password]')
-		);
-		$this->form_validation->set_rules($validation_rules);
-		// Run the validation.
-		if ($this->form_validation->run())
-		{
-			// Get user login details from input.
-			$email = $this->input->post('register_email_address');
-			$username = $this->input->post('register_username');
-			$password = $this->input->post('register_password');
-			
-			// Get user profile data from input.
-			// You can add whatever columns you need to customise user tables.
-			$profile_data = array(
-				'upro_first_name' => $this->input->post('register_first_name'),
-				'upro_last_name' => $this->input->post('register_last_name'),
-				'upro_phone' => $this->input->post('register_phone_number')
-			);
-			
-			// Set whether to instantly activate account.
-			// This var will be used twice, once for registration, then to check if to log the user in after registration.
-			$instant_activate = TRUE;
-	
-			// The last 2 variables on the register function are optional, these variables allow you to:
-			// #1. Specify the group ID for the user to be added to (i.e. 'Moderator' / 'Public'), the default is set via the config file.
-			// #2. Set whether to automatically activate the account upon registration, default is FALSE. 
-			// Note: An account activation email will be automatically sent if auto activate is FALSE, or if an activation time limit is set by the config file.
-			$response = $this->flexi_auth->insert_user($email, $username, $password, $profile_data, 3, $instant_activate);
-      
-			if ($response)
-			{
-				// This is an example 'Welcome' email that could be sent to a new user upon registration.
-				// Bear in mind, if registration has been set to require the user activates their account, they will already be receiving an activation email.
-				// Therefore sending an additional email welcoming the user may be deemed unnecessary.
-				//$email_data = array('identity' => $email);
-				//$this->flexi_auth->send_email($email, 'Welcome', 'registration_welcome.tpl.php', $email_data);
-				// Note: The 'registration_welcome.tpl.php' template file is located in the '../views/includes/email/' directory defined by the config file.
-				
-				###+++++++++++++++++###
-				
-				// Save any public status or error messages (Whilst suppressing any admin messages) to CI's flash session data.
-				$this->session->set_flashdata('message', $this->flexi_auth->get_messages());
-				// This is an example of how to log the user into their account immeadiately after registering.
-				// This example would only be used if users do not have to authenticate their account via email upon registration.
-				/*
-				if ($instant_activate && $this->flexi_auth->login($email, $password))
-				{
-					// Redirect user to public dashboard.
-					redirect('auth_public/dashboard');
-				}
-				// Redirect user to login page
-				redirect('auth');
-				*/
-				redirect('jad_auth_admin/manage_user_accounts');
-			}
-		}
+		$email = $this->input->post('register_email_address');
+		$username = $this->input->post('register_username');
+		$password = $this->input->post('register_password');
 
-		// Set validation errors.
-        $this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
-		return FALSE;
+		// Get user profile data from input.
+		// You can add whatever columns you need to customise user tables.
+		$profile_data = array(
+			'upro_full_name' => $this->input->post('register_full_name'),
+			'upro_phone' => $this->input->post('register_phone_number')
+		);
+			
+		// Set whether to instantly activate account.
+		// This var will be used twice, once for registration, then to check if to log the user in after registration.
+		$instant_activate = TRUE;
+
+		// The last 2 variables on the register function are optional, these variables allow you to:
+		// #1. Specify the group ID for the user to be added to (i.e. 'Moderator' / 'Public'), the default is set via the config file.
+		// #2. Set whether to automatically activate the account upon registration, default is FALSE. 
+		// Note: An account activation email will be automatically sent if auto activate is FALSE, or if an activation time limit is set by the config file.
+		$response = $this->flexi_auth->insert_user($email, $username, $password, $profile_data, 3, $instant_activate);
+      
+		if ($response)
+		{
+			// This is an example 'Welcome' email that could be sent to a new user upon registration.
+			// Bear in mind, if registration has been set to require the user activates their account, they will already be receiving an activation email.
+			// Therefore sending an additional email welcoming the user may be deemed unnecessary.
+			//$email_data = array('identity' => $email);
+			//$this->flexi_auth->send_email($email, 'Welcome', 'registration_welcome.tpl.php', $email_data);
+			// Note: The 'registration_welcome.tpl.php' template file is located in the '../views/includes/email/' directory defined by the config file.
+				
+			###+++++++++++++++++###
+				
+			// Save any public status or error messages (Whilst suppressing any admin messages) to CI's flash session data.
+			$this->session->set_flashdata('message', $this->flexi_auth->get_messages());
+			// This is an example of how to log the user into their account immeadiately after registering.
+			// This example would only be used if users do not have to authenticate their account via email upon registration.
+			/*
+			if ($instant_activate && $this->flexi_auth->login($email, $password))
+			{
+				// Redirect user to public dashboard.
+				redirect('auth_public/dashboard');
+			}
+			// Redirect user to login page
+			redirect('auth');
+			*/
+			redirect('jad_auth_admin/manage_user_accounts');
+		}
 	}
 	/**
 	 * change_password
@@ -99,20 +76,6 @@ class Jad_auth_admin_model extends CI_Model {
 	 */
 	function change_password($uId)
 	{
-		$this->load->library('form_validation');
-
-		// Set validation rules.
-		// The custom rule 'validate_password' can be found in '../libaries/MY_Form_validation.php'.
-		$validation_rules = array(
-			array('field' => 'new_password', 'label' => 'New Password', 'rules' => 'required|validate_password|matches[confirm_new_password]'),
-			array('field' => 'confirm_new_password', 'label' => 'Confirm Password', 'rules' => 'required')
-		);
-		
-		$this->form_validation->set_rules($validation_rules);
-
-		// Run the validation.
-		if ($this->form_validation->run())
-		{
 			// Get password data from input.
 			//获取该id下的email地址
 			$query = $this->db->get_where('user_accounts', array('uacc_id' => $uId))->row_array();
@@ -132,13 +95,6 @@ class Jad_auth_admin_model extends CI_Model {
 			// Redirect user.
 			// Note: As an added layer of security, you may wish to email the user that their password has been updated.
 			if($response) redirect('jad_auth_admin/manage_user_accounts');
-		}
-		else
-		{		
-			// Set validation errors.
-			$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
-			return FALSE;
-		}
 	}
  	/**
 	 * get_user_accounts
@@ -273,23 +229,19 @@ class Jad_auth_admin_model extends CI_Model {
 	 */
 	function update_user_account($user_id)
 	{
-		$this->load->library('form_validation');
+			//要对地区信息进行处理，获取相应的字段
+			//国外：国家名
+			//澳门：国家名、特区名、岛
+			//其他：国家名、省、市、区
+			$locaTempArray = array("","","","");
+			$locationArray = explode(',',$this->input->post('location_name_chain'));
+			$locationIdArray = explode(',',$this->input->post('location_id_chain'));
+			for($i=0;$i<count($locationArray);$i++){
+				$locaTempArray[$i] = $locationArray[$i].','.$locationIdArray[$i];
+			}
+			
 
-		// Set validation rules.
-		$validation_rules = array(
-			array('field' => 'update_first_name', 'label' => 'First Name', 'rules' => 'required'),
-			array('field' => 'update_last_name', 'label' => 'Last Name', 'rules' => 'required'),
-			array('field' => 'update_phone_number', 'label' => 'Phone Number', 'rules' => 'required'),
-			array('field' => 'update_address_01', 'label' => 'Address 01', 'rules' => 'required'),
-			array('field' => 'update_email_address', 'label' => 'Email Address', 'rules' => 'required|valid_email|identity_available['.$user_id.']'),
-			array('field' => 'update_username', 'label' => 'Username', 'rules' => 'min_length[4]|identity_available['.$user_id.']'),
-			array('field' => 'update_group', 'label' => 'User Group', 'rules' => 'required|integer')
-		);
 
-		$this->form_validation->set_rules($validation_rules);
-		
-		if ($this->form_validation->run())
-		{
 			// 'Update User Account' form data is valid.
 			// IMPORTANT NOTE: As we are updating multiple tables (The main user account and user profile tables), it is very important to pass the
 			// primary key column and value in the $profile_data for any custom user tables being updated, otherwise, the function will not
@@ -297,13 +249,13 @@ class Jad_auth_admin_model extends CI_Model {
 			// In this example, the primary key column and value is 'upro_id' => $user_id.
 			$profile_data = array(
 				'upro_id' => $user_id,
-				'upro_first_name' => $this->input->post('update_first_name'),
-				'upro_last_name' => $this->input->post('update_last_name'),
+				'upro_full_name' => $this->input->post('update_full_name'),
 				'upro_phone' => $this->input->post('update_phone_number'),
 				'upro_address' => $this->input->post('update_address_01'),
-				'upro_city' => $this->input->post('update_city'),
-				'upro_county' => $this->input->post('update_county'),
-				'upro_country' => $this->input->post('update_country'),
+				'upro_country' => $locaTempArray[0],
+				'upro_county' => $locaTempArray[1],
+				'upro_city' => $locaTempArray[2],
+				'upro_district' => $locaTempArray[3],
 				'upro_post_code' => $this->input->post('update_post_code'),
 				$this->flexi_auth->db_column('user_acc', 'email') => $this->input->post('update_email_address'),
 				$this->flexi_auth->db_column('user_acc', 'username') => $this->input->post('update_username'),
@@ -318,9 +270,6 @@ class Jad_auth_admin_model extends CI_Model {
 			
 			// Redirect user.
 			redirect('jad_auth_admin/manage_user_accounts');			
-		}
-        $this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
-		return FALSE;
 	}	
 
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	

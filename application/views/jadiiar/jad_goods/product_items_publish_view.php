@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <title>JaddiarERP</title>
 <?php $this->load->view('includes/jad_head'); ?>  
+<style>
+label.valid {
+    width: 24px;
+    height: 24px;
+    background: url(<?php echo $includes_dir; ?>images/valid.png) center center no-repeat;
+    display: inline-block;
+    text-indent: -9999px;
+}
+label.error {
+    font-weight: bold;
+    color: red;
+    padding: 2px 8px;
+    margin-top: 2px;
+}
+</style>
 </head>
 <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
 <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
@@ -34,49 +49,16 @@
     <div class="container-fluid">
         <div class="row-fluid">
         <?php $this->load->view('includes/jad_message'); ?>  
-        <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
+
         <div class="row-fluid">
-            <div class="span2">
-                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  发布</button>
-                <input type="hidden" name="publish_product_items" value="1" />
-            </div>
-            <div class="span1" id = "ajaxPic">
+            <div class="" id = "ajaxPic">
             </div>
         </div></br>
-
-        <div class="well">
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝图片</b></div>
-                <div class="span10" ><img class="img-rounded" src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($productInfo['product_img_url'],'sq');?>"  ></div>
+       <div class="row-fluid">
+            <div class="span2">
+                <img class="img-rounded" src="<?php echo $this->jad_global_model->get_url_sub_image_by_formal($productInfo['product_img_url'],'sq');?>"  >
             </div>
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝类型</b></div>
-                <div class="span10" >
-                     <input type="radio" name="stuffStatus" id="optionsRadios1" value="new" checked>全新&nbsp;&nbsp;&nbsp;&nbsp;
-                     <input type="radio" name="stuffStatus" id="optionsRadios2" value="second">二手
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝标题</b></div>
-                <div class="span10" >
-                     <input type="text" name="product_title" id = "product_title" value = "<?php echo $productInfo['product_title'];?>"/>
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>一口价</b></div>
-                <div class="span10" >
-                     <input type="text" name="price" id = "product_price" placeholder="注意价格区间位于sku属性之间" />
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝数量</b></div>
-                <div class="span10" >
-                     <input type="text" name="product_num" id = "product_num" placeholder="若销售属性有值，则为sku之和" />
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>宝贝SKU信息</b></div>
-                <div class="span10" >
+            <div class="span10">
                     <table id="sku_items_table" class="table table-bordered table-condensed">
                         <thead>
                             <tr>
@@ -115,43 +97,85 @@
                         </tbody>
                         <?php } ?>
                     </table>
-                </div>
-            </div>              
-            <div class="row-fluid" id = 'location_checkbox' name = 'location_checkbox'>
-                <div class="span2" ><b>采购地</b></div>
-                <div class="span10" >
-                     <input type="radio" name="location_bought" id="location_bought" value="1" checked>国内&nbsp;&nbsp;&nbsp;&nbsp;
-                     <input type="radio" name="location_bought" id="location_bought" value="2">海外及港澳台
-                </div>
-            </div>              
-            <div class="row-fluid">
-                <div class="span2"><b>必选属性</b></div>
-                <div class="span10" id="enum-must-props"></div>
+ 
             </div>
-            <div class="row-fluid">
-                <div class="span2"><b>上架店铺</b></div>
-                <div class="span10">
-                <select name = "publish_shop" id = "publish_shop">
-                <option value="">--请选择--</option>
-                <option value="肥肥9089">CJ测试用，勿选</option>
-                <option value="jadiiar">JADIIAR 总店</option>
-                <option value="siiena">SIIENA 折扣店</option>
-                </select>
-                </div>
-            </div>
-            <div class="row-fluid">
-                <div class="span2" ><b></b></div>
-                <div class="well span10" style="max-height: 200px;overflow-y: scroll;" id = "seller_cats" >
-
-                </div>
-  
-  
-            </div>              
-            <div class="row-fluid">
-                <div class="span2" ><b>商品描述</b></div>
-                <div class="span10" ><textarea id="item_desc" name="item_desc"></textarea></div>
-            </div>              
         </div>
+        <?php $attributes = array('id' => 'item_publish_form','class' => 'form-horizontal','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
+	<div class="control-group">
+	    <label class="control-label" for="stuffStatus">宝贝类型</label>
+	    <div class="controls">
+		<label class="radio inline" style="margin-left:1cm">
+		<input type="radio" name="stuffStatus" checked value="new" />全新
+		</label>
+		<label class="radio inline" style="margin-left:2cm">
+		<input type="radio" name="stuffStatus" value="second" />二手
+		</label>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="product_title">宝贝标题</label>
+	    <div class="controls">
+	        <input type="text" class="span6" name="product_title" id = "product_title" value = "<?php echo $productInfo['product_title'];?>"/>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="product_price">一口价</label>
+	    <div class="controls">
+			 <input type="text" name="product_price" id = "product_price" placeholder="注意价格区间位于sku属性之间" />
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="product_num">宝贝数量</label>
+	    <div class="controls">
+                     <input type="text" name="product_num" id = "product_num" placeholder="若销售属性有值，则为sku之和" />
+	    </div>
+	</div>
+	<div class="control-group" id = "location_checkbox">
+	    <label class="control-label" for="location_bought">采购地</label>
+	    <div class="controls">
+		<label class="radio inline" style="margin-left:1cm">
+		<input type="radio" name="location_bought" id="location_bought" checked value="1" onclick="" />国内
+		</label>
+		<label class="radio inline" style="margin-left:2cm">
+		<input type="radio" name="location_bought" id="location_bought" value="2" onclick="" />海外及港澳台
+		</label>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="enum-must-props">必选属性</label>
+	    <div class="controls" id="enum-must-props"></div>                                                              
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="publish_shop">上架店铺</label>
+	    <div class="controls">
+		<select id="publish_shop" name="publish_shop">
+		<option value="">--请选择--</option>
+		<option value="肥肥9089">CJ测试用，勿选</option>
+		<option value="jadiiar">JADIIAR 总店</option>
+		<option value="siiena">SIIENA 姐妹店</option>
+		</select>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="seller_cats">店铺类别</label>
+	    <div class="controls well" style="max-height: 200px;overflow-y: scroll;" id="seller_cats">
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="item_desc">宝贝描述</label>
+	    <div class="controls">
+		<textarea id="item_desc" name="item_desc"></textarea>
+	    </div>
+	</div>
+
+        <div class="row-fluid">
+            <div class="span2 pull-right">
+                <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  发布</button>
+                <input type="hidden" name="publish_product_items" value="1" />
+            </div>
+            <div class="span1" id = "ajaxPic">
+            </div>
+        </div></br>
 
         <input type="hidden" name = "product_id" value = '<?php echo $productInfo['product_id']; ?>' />
         <input type="hidden" name = "cid" id= "cid" value = '<?php echo $productInfo['cid']; ?>' />
@@ -177,56 +201,10 @@
 </div>
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
-
-//对宝贝的描述内容进行HTML编码，以防止CI的XSS跨站攻击策略对代码进行修改;后台利用html_entity_decode进行解码
-function HTMLEncode( input ){
-    var converter = document.createElement("DIV");
-    converter.innerText = input;
-    var output = converter.innerHTML;
-    converter = null;
-    return output;
-}
-
-function checkNum(obj)
-{
-     var re = /^[1-9]\d*$/;
-     //alert(re.test(obj));
-     return re.test(obj);
-} 
-
-Array.prototype.max = function(){ 
-    return Math.max.apply({},this) 
-} 
-Array.prototype.min = function(){ 
-    return Math.min.apply({},this) 
-} 
-
-function isfloat(oNum){
-    if(!oNum) return false;
-    var strP=/^[0-9]+(.[0-9]{2})?$/;
-    if(!strP.test(oNum)) return false;
-    try{
-        if(parseFloat(oNum)!=oNum) return false;
-    }catch(ex){
-        return false;
-    }
-    return true;
-}
-
-//获取非关键属性中必选属性链pid:vid
+//对输入的宝贝信息数据进行逻辑校验，并从UI中获取店铺类目、非关键属性的信息，以备后台处理
 function checkAll(form){
 
-    //宝贝标题不能为空
-    if( $("#product_title")[0].value == '' || $("#product_title")[0].value.length >30 ){
-        alert("宝贝标题必须填写且小于30个字符!");
-        return false;
-    }
-    //发布的店铺不能不选
-    if( $("#publish_shop")[0].value == '' ){
-        alert("必须选择需要发布的店铺!");
-        return false;
-    }
-    //遍历店铺类目，获取选择的类目cid串
+    //遍历店铺类目，获取选择的类目cid串，并验证是否至少选择一个类目
     var seller_cats_str= "";
     var checkDIV = $("#seller_cats")[0];
     for (var i=0;i<checkDIV.childNodes.length;i++){
@@ -240,9 +218,20 @@ function checkAll(form){
         alert("至少选择一项店铺类目!");
     }
 
-    //对表单输入框进行验证
+    //遍历非关键属性中的必选属性，获取属性值，并验证每一个属性是否输入或者选择了值
+    var mustProps = $("#enum-must-props")[0];
+    var mustPropsStr = '';
+    for ( var i=0;i<mustProps.childNodes.length;i++){
+        if ( mustProps.childNodes[i].childNodes[1].childNodes[0].value == ''){
+            alert('必须选择每一个必选属性!');
+            return false;
+        }
+        mustPropsStr = mustPropsStr + mustProps.childNodes[i].childNodes[1].childNodes[0].value + ';';
+    }
+    mustPropsStr = mustPropsStr.substr(0,mustPropsStr.length-1);
+    $("#must_props")[0].value = mustPropsStr;
 
-    //遍历sku_item_tabli，获取sku相关参数
+    //遍历sku_item_table，获取sku相关参数
     var sku_properties = "";
     var sku_property_alias = "";
     var item_props = "";
@@ -298,8 +287,6 @@ function checkAll(form){
         sku_prices = sku_prices.substr(1);
         sku_quantities = sku_quantities.substr(1);
     }
-    //alert(product_items_num );
-    //alert(sku_properties);
 
     //说明不存在商品信息(sku串)，或者没有选择存在的任何一个sku串，这种情况下，宝贝的数量就需要从输入框获取了
     //若存在销售属性，则必须选择商品发布；因为有些类目的销售属性是必须属性
@@ -312,13 +299,13 @@ function checkAll(form){
         return false;
         //不存在，则没有props_property_alias
     }
-    //1、宝贝描述信息不能为空
+    //宝贝描述信息不能为空
     if( $("#item_desc")[0].value == '' ){
         alert('宝贝描述信息不能为空!');
         return false;
     }
-    //2、宝贝价格信息不能为空,且必须为正整数！
-    if (!checkNum($("#product_price")[0].value)){
+    //宝贝价格信息不能为空,且必须为正整数！；这个验证只能在checkAll中进行，因为需要priceArray参数。
+    if (!isfloat($("#product_price")[0].value)){
         alert('宝贝价格信息不能为空，且必须为正整数!');
         return false;
     }else if($("#product_price")[0].value < pricesArray.min() || $("#product_price")[0].value > pricesArray.max()){
@@ -326,12 +313,6 @@ function checkAll(form){
         alert('宝贝的价格必须处于sku价格之间!');
         return false;
     }
-    //3、宝贝数量信息不能为空,且必须为正整数！
-    if (!checkNum($("#product_num")[0].value)){
-        alert('宝贝数量信息不能为空，且必须为正整数!');
-        return false;
-    }
-
 
     $("#seller_cats_str")[0].value = seller_cats_str;
     $("#product_item_props")[0].value = item_props;
@@ -342,22 +323,43 @@ function checkAll(form){
     $("#product_items_num")[0].value = product_items_num;
     $("#props_property_alias")[0].value = sku_property_alias;
     $("#format_item_desc")[0].value = HTMLEncode($("#item_desc")[0].value);
-
-    //alert($("#format_item_desc")[0].value);
-    //return false;
-    //遍历非关键属性中必选属性，必须对每一个进行选择
-    var mustProps = $("#enum-must-props")[0];
-    var mustPropsStr = '';
-    for ( var i=0;i<mustProps.childNodes.length;i++){
-        if ( mustProps.childNodes[i].childNodes[1].childNodes[0].value == ''){
-            alert('必须选择每一个必选属性!');
-            return false;
-        }
-        mustPropsStr = mustPropsStr + mustProps.childNodes[i].childNodes[1].childNodes[0].value + ';';
-    }
-    mustPropsStr = mustPropsStr.substr(0,mustPropsStr.length-1);
-    $("#must_props")[0].value = mustPropsStr;
 }
+
+//对宝贝的描述内容进行HTML编码，以防止CI的XSS跨站攻击策略对代码进行修改;后台利用html_entity_decode进行解码
+function HTMLEncode( input ){
+    var converter = document.createElement("DIV");
+    converter.innerText = input;
+    var output = converter.innerHTML;
+    converter = null;
+    return output;
+}
+
+function checkNum(obj)
+{
+     var re = /^[1-9]\d*$/;
+     //alert(re.test(obj));
+     return re.test(obj);
+} 
+
+Array.prototype.max = function(){ 
+    return Math.max.apply({},this) 
+} 
+Array.prototype.min = function(){ 
+    return Math.min.apply({},this) 
+} 
+
+function isfloat(oNum){
+    if(!oNum) return false;
+    var strP=/^[0-9]+(.[0-9]{2})?$/;
+    if(!strP.test(oNum)) return false;
+    try{
+        if(parseFloat(oNum)!=oNum) return false;
+    }catch(ex){
+        return false;
+    }
+    return true;
+}
+
 
 String.prototype.Trim = function() { 
    return this.replace(/(^\s*)|(\s*$)/g, ""); 
@@ -371,7 +373,7 @@ String.prototype.RTrim = function() {
    return this.replace(/(\s*$)/g, ""); 
 }
 
-//创建非关键属性中必选属性的选择表单
+//创建非关键属性中必选属性的HTML元素
 function createPropsForm(cid) {
     //对提交按钮做出处理
     $("#form_btn")[0].disabled = 'disabled';
@@ -428,18 +430,18 @@ function createPropsForm(cid) {
                                 alert("获取数据失败，请与网站管理员联系！");
                             }
                         }); 
-                        //针对每一项关键属性，都用了一个div来便于多重属性的选择或者设置
+                        //针对每一项关键属性，需要利用HTML元素来进行显示
                         var propDiv = document.createElement('div');
                         propDiv.id = 'pid_' + props[i]['pid'] + '_div';
-                        propDiv.setAttribute("class", "row-fluid"); 
+                        propDiv.setAttribute("class", "control-group"); 
 
-                        var propDivName = document.createElement('div');
+                        var propDivName = document.createElement('label');
                         propDivName.id = 'pid_' + props[i]['pid'] + '_divName';
-                        propDivName.setAttribute('class', 'span2');
+                        propDivName.setAttribute('class', 'control-label');
 
                         var propDivValue = document.createElement('div');
                         propDivValue.id = 'pid_' + props[i]['pid'] + '_divValue';
-                        propDivValue.setAttribute('class', 'span10');
+                        propDivValue.setAttribute('class', 'controls');
 
                         propDivName.appendChild(document.createTextNode(props[i].name+"："));
                         propDivValue.appendChild(sel);
@@ -485,15 +487,15 @@ function parentPropList(o){
             //添加作为附加子属性的元素
             var propDiv = document.createElement('div');
             propDiv.id =  o.id + '_subDiv';
-            propDiv.setAttribute('class', 'row-fluid');
+            propDiv.setAttribute('class', 'control-group');
 
-            var propDivName = document.createElement('div');
+            var propDivName = document.createElement('label');
             propDivName.id =  o.id + '_subName';
-            propDivName.setAttribute('class', 'span2 offset1');
+            propDivName.setAttribute('class', 'control-label');
 
             var propDivValue = document.createElement('div');
             propDivValue.id =  o.id + '_subValue';
-            propDivValue.setAttribute('class', 'span9');
+            propDivValue.setAttribute('class', 'controls');
 
             propDivValue.appendChild(txt);
             propDivName.appendChild(document.createTextNode("自定义："));
@@ -564,15 +566,15 @@ function parentPropList(o){
                             //添加作为附加子属性的元素
                             var propDiv = document.createElement('div');
                             propDiv.id = 'pid_' + pid + '_subDiv';
-                            propDiv.setAttribute('class', 'row-fluid');
+                            propDiv.setAttribute('class', 'control-group');
 
-                            var propDivName = document.createElement('div');
+                            var propDivName = document.createElement('label');
                             propDivName.id =  pid + '_subName';
-                            propDivName.setAttribute('class', 'span2 offset1');
+                            propDivName.setAttribute('class', 'control-label');
 
                             var propDivValue = document.createElement('div');
                             propDivValue.id =  pid + '_subValue';
-                            propDivValue.setAttribute('class', 'span9');
+                            propDivValue.setAttribute('class', 'controls');
 
                             propDivValue.appendChild(sel);
                             propDivName.appendChild(document.createTextNode(prop_data[i]['name']));
@@ -669,6 +671,7 @@ function creatSellerCatsCheckFrom(o){
                      var checkBox = document.createElement('input');
                      checkBox.setAttribute('type', 'checkbox');
                      checkBox.id = jsObject[i].cid;
+					 checkBox.name = "seller_names[]";
                      checkBox.value = jsObject[i].cid;
                      checkLabel.appendChild(checkBox);
                  }
@@ -686,6 +689,7 @@ function creatSellerCatsCheckFrom(o){
              var checkBox = document.createElement('input');
              checkBox.setAttribute('type', 'checkbox');
              checkBox.id = jsObject[i].cid;
+			 checkBox.name = "seller_names[]";
              checkBox.value = jsObject[i].cid;
              checkLabel.appendChild(checkBox);
              $("#seller_cats")[0].appendChild(checkLabel);
@@ -700,11 +704,8 @@ function creatSellerCatsCheckFrom(o){
 
 $(document).ready(function(){
     document.getElementById('publish_shop').onchange = function(){creatSellerCatsCheckFrom(this)};
-    
-
     //为输入框绑定插件
     $("#item_desc").cleditor(); 
-    
     //为选择采购地绑定响应时间
     $("input[type='radio'][name='location_bought']").change(
         function() {
@@ -717,19 +718,19 @@ $(document).ready(function(){
                 //在采购地的后面加上选择附加选择框，并调用接口，获取国家、地区值
                 var propDiv = document.createElement('div');
                 propDiv.id = 'globalStockDiv';
-                propDiv.setAttribute('class', 'row-fluid');
-                var propDivName = document.createElement('div');
-                propDivName.setAttribute('class', 'span2');
+                propDiv.setAttribute('class', 'control-group');
+                var propDivName = document.createElement('label');
+                propDivName.setAttribute('class', 'control-label');
                 var propDivValue = document.createElement('div');
-                propDivValue.setAttribute('class', 'span10');
+                propDivValue.setAttribute('class', 'controls');
 
                 var propSubDiv1 = document.createElement('div');
-                propSubDiv1.setAttribute('class', 'row-fluid');
-                var propSubDivName1 = document.createElement('div');
+                propSubDiv1.setAttribute('class', 'control-group');
+                var propSubDivName1 = document.createElement('label');
                 propSubDivName1.appendChild(document.createTextNode('国家/地区'));
-                propSubDivName1.setAttribute('class', 'span2');
+                propSubDivName1.setAttribute('class', 'control-label');
                 var propSubDivValue1 = document.createElement('div');
-                propSubDivValue1.setAttribute('class', 'span10');
+                propSubDivValue1.setAttribute('class', 'controls');
                 propSubDiv1.appendChild(propSubDivName1);
                 propSubDiv1.appendChild(propSubDivValue1);
                 //设置select中的值
@@ -802,30 +803,39 @@ $(document).ready(function(){
                 propSubDivValue1.appendChild(sel);
 
                 var propSubDiv2 = document.createElement('div');
-                propSubDiv2.setAttribute('class', 'row-fluid');
-                var propSubDivName2 = document.createElement('div');
+                propSubDiv2.setAttribute('class', 'control-group');
+                var propSubDivName2 = document.createElement('label');
                 propSubDivName2.appendChild(document.createTextNode('库存类型'));
-                propSubDivName2.setAttribute('class', 'span2');
+                propSubDivName2.setAttribute('class', 'control-label');
                 var propSubDivValue2 = document.createElement('div');
-                propSubDivValue2.setAttribute('class', 'span10');
+                propSubDivValue2.setAttribute('class', 'controls');
                 propSubDiv2.appendChild(propSubDivName2);
                 propSubDiv2.appendChild(propSubDivValue2);
                 //增加radiobox
+                var radiolabel = document.createElement('label');
+                radiolabel.setAttribute('class', 'radio inline');
+                radiolabel.setAttribute('style', 'margin-left:1cm');
                 var radio = document.createElement('input');
                 radio.type = 'radio';
                 radio.name = 'global_type';
                 radio.id = 'global_type';
                 radio.value = '1';
-                propSubDivValue2.appendChild(radio);
-                propSubDivValue2.appendChild(document.createTextNode('现货'));
+                radio.checked= 'checked';
+                radiolabel.appendChild(radio);
+                radiolabel.appendChild(document.createTextNode('现货'));
+				propSubDivValue2.appendChild(radiolabel);
 
+                var radiolabel = document.createElement('label');
+                radiolabel.setAttribute('class', 'radio inline');
+                radiolabel.setAttribute('style', 'margin-left:2cm');
                 var radio = document.createElement('input');
                 radio.type = 'radio';
                 radio.name = 'global_type';
                 radio.id = 'global_type';
                 radio.value = '2';
-                propSubDivValue2.appendChild(radio);
-                propSubDivValue2.appendChild(document.createTextNode('代购'));
+                radiolabel.appendChild(radio);
+                radiolabel.appendChild(document.createTextNode('代购'));
+				propSubDivValue2.appendChild(radiolabel);
                 
                 propDiv.appendChild(propDivName);
                 propDiv.appendChild(propDivValue);
@@ -837,8 +847,52 @@ $(document).ready(function(){
 
             }
     });
-    
     createPropsForm(<?php echo $productInfo['cid']; ?>);
+
+    // 判断价格信息是否大于0
+    jQuery.validator.addMethod("product_price_check", function(value, element) { 
+         value=parseFloat(value);      
+         return this.optional(element) || value>0;       
+    }, "价格必须大于0"); 
+
+    // 判断数量是否为正整数
+    jQuery.validator.addMethod("product_num_check", function(value, element) { 
+         value=parseInt(value);      
+         return this.optional(element) || value>0;       
+    }, "产品数量必须为正整数"); 
+
+    //对表单的输入内容进行初步校验，二次校验在checkAll函数中进行
+    $('#item_publish_form').validate({
+        rules: {
+          product_title: {
+            required: true,
+            maxlength: 30
+          },
+          product_price: {
+            required: true,
+            number: true,
+            product_price_check: true
+          },
+          product_num: {
+            required: true,
+            product_num_check: true
+          },
+          publish_shop: {
+            required: true,
+          },
+          sel_global_stock: {
+            required: true
+          }
+        },
+        highlight: function(element) {
+            $(element).closest('.control-group').removeClass('success').addClass('error');
+        },
+        success: function(element) {
+            element
+            .text('OK!').addClass('valid')
+            .closest('.control-group').removeClass('error').addClass('success');
+        }
+    });
 });
 </script>  
 </body>

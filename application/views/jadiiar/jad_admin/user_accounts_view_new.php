@@ -42,8 +42,7 @@
                 <thead>
                     <tr>
                         <th>Email</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
+                        <th>姓名</th>
                         <th>用户组</th>
                         <th>用户权限</th>
                         <th>吊销帐户</th>
@@ -60,10 +59,7 @@
                             </a>
                         </td>
                         <td>
-                            <?php echo $user['upro_first_name'];?>
-                        </td>
-                        <td>
-                            <?php echo $user['upro_last_name'];?>
+                            <?php echo $user['upro_full_name'];?>
                         </td>
                         <td>
                             <?php echo $user[$this->flexi_auth->db_column('user_group', 'name')];?>

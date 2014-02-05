@@ -185,7 +185,7 @@
 	$config['database']['custom']['user_profile']['foreign_key'] = 'upro_uacc_fk';
 	$config['database']['custom']['user_profile']['join'] = 'jadiiar_user_profiles.upro_uacc_fk';
 	$config['database']['custom']['user_profile']['custom_columns'] = array(
-		'upro_first_name','upro_last_name','upro_phone','upro_address','upro_city','upro_county','upro_post_code','upro_country'
+		'upro_full_name','upro_phone','upro_address','upro_district','upro_city','upro_county','upro_post_code','upro_country'
 	);
 
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	

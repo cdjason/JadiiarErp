@@ -48,7 +48,6 @@
                     <a title="按产品创建时间排序" class="btn <?php echo ($orderBy=='product_create_time')?'btn-info':'';?>" href="<?php echo $base_url; ?>index.php/jad_goods/manage_products/order_by/product_create_time/order_parameter/<?php echo ($orderPara=='desc')?'asc':'desc';?>">新品<i class="<?php echo ($orderPara=='desc')?'icon-arrow-up':'icon-arrow-down';?>"></i></a>
                 </div>
             </div>
-            
         </div>
             <?php echo form_close();?>	
 

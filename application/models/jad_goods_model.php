@@ -19,36 +19,12 @@ class Jad_goods_model extends CI_Model {
 		return $this->db->get_where('info_goods_first',array('goods_expired' => 0))->result_array();
 	}
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
-	// 商品基础信息维护
+	// 产品信息维护
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
     /**
-	 * add_goods_first
-	 * 新增商品一级信息
+	 * add_product
+	 * 新增产品信息
 	 */
-    //单独定义一个生成货号的方法算了，这样随时都可以调用
-    function get_new_series_num()
-    {
-        //生成10位随机货号，并判断该货号在数据库中是否存在，若存在，则重新生成
-        $productId = $this->generate_randnum(10);
-        while($this->db->get_where('info_product', array('product_id' => $productId))->num_rows() != 0){
-            $productId = $this->generate_randnum(10);
-        }
-        return $productId;
-
-    }
-    //单独定义一个生成商品编码的方法，这样随时都可以调用
-    function get_new_product_item_num($productId)
-    {
-        //生成3位随机号，并判断该号在数据库中是否存在，若存在，则重新生成
-        $productItemId = $this->generate_randnum(3);
-        $pItemId = (string)$productId . (string)$productItemId;
-        while($this->db->get_where('info_product_item', array('item_id' => $pItemId))->num_rows() != 0){
-            $productItemId = $this->generate_randnum(3);
-            $pItemId = (string)$productId . (string)$productItemId;
-        }
-        return $pItemId;
-
-    }
     function add_product()
     {
         //对输入提交的产品信息表单进行验证
@@ -99,6 +75,228 @@ class Jad_goods_model extends CI_Model {
 		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
 		return FALSE;
     }
+ 	/**
+	 * update_product
+     * 更新产品信息 
+     * 注意：未发布的时候，可以更改品牌信息，但是发布之后，品牌信息还能不能改
+     * 考虑：如果该产品已发布，是否更新宝贝的主图信息。
+	 */
+    function update_product($pId)
+    {
+        //需要更改相应inputs_str的信息
+        $inputsPidsArr = explode(',',$this->input->post('inputs_pids'));
+        $inputsStrArr = explode(',',$this->input->post('inputs_str'));
+        //当inputs_pids中含有品牌的id：20000时，则进行替换
+        if (in_array('20000',$inputsPidsArr)){
+            $inputsStrArr[array_search('20000', $inputsPidsArr)] = $this->input->post('product_brand');
+        }
+
+        $profile_data = array(
+            'product_title' => $this->input->post('product_title'),
+            'inputs_str' => implode(',',$inputsStrArr),
+            'product_brand' => $this->input->post('product_brand'),
+            'product_desc' => $this->input->post('product_desc'),
+            'product_img_url' => $this->input->post('product_img_url')
+        );		
+        $this->db->where('product_id', $pId);
+        $this->db->update('info_product', $profile_data); 
+        //注意，若没有改动数据的提交，会被数据库认为是没有修改，从而$this->db->affected_rows()返回0
+
+        /***判断该产品是否已经提交，若提交，则要修改宝贝的相应信息**************************************************
+         * 新修改，不允许在这个地方去修改宝贝信息
+
+        if ($this->input->post('num_iid') != '' ){
+            $this->load->library('TopSdk', $this->config->item('topapi_config') );
+            $this->topsdk->autoload('ItemUpdateRequest');
+            $this->topsdk->req->setNumIid($this->input->post('num_iid'));
+            $this->topsdk->req->setTitle($this->input->post('product_title')); 
+            //var_dump($this->input->post('product_img_url'));
+            //$localPath = $this->jad_global_model->get_local_image_path($this->input->post('product_img_url'));
+            $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
+
+            if(file_exists($localPath))
+            {
+                $this->topsdk->req->setImage('@'.$localPath);
+            }
+                    //var_dump($this->input->post('num_iid'));
+            $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
+            $alertMessage = '';
+            if ( count($result) == 1){
+                $alertMessage = $alertMessage.'<p class="">宝贝信息更新成功,ID:'.$result['item']['num_iid'].'</p>';
+            }else{
+                //发布失败
+                if($result['msg']=='Remote service error'){
+                    $alertMessage = $alertMessage.'<p class="error_msg">宝贝信息更新失败:'.$result['sub_msg'].'</p>';
+                }else{
+                    $alertMessage = $alertMessage.'<p class="error_msg">宝贝信息更新失败:'.$result['msg'].'</p>';
+                }
+            }
+        }
+        $this->session->set_flashdata('message',$alertMessage);
+        **************************************************************************************************************/
+        redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
+    }
+ 	/**
+	 * update_products
+     * 通过checkbox的选择，删除相应的产品信息
+     * 目前只要发布的产品，就不允许删除
+     * 以下情况为把产品信息设置过期的条件：
+     * 1、存在商品信息，该商品信息已经购买过实际的商品；
+     * 2、存在商品信息，该商品信息正在淘宝的店铺上发布；
+	 */
+    function update_products()
+    {
+        if ($delete_product = $this->input->post('delete_product'))
+        {
+            foreach($delete_product as $product_id => $delete)
+            {
+                $this->db->delete('info_product', array('product_id' => $product_id)); 
+            }
+        }
+        redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
+    }
+
+    /**
+	 * get_products
+	 * 获取ERP中的产品信息
+     * 目前并没有加入过期产品的判断
+	 */
+    function get_products()
+    {
+        $uri = $this->uri->uri_to_assoc(3);     
+        $limit = $this->config->item('pag_limit');
+        $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
+        if (array_key_exists('search', $uri))
+        {
+            $pagination_url = 'jad_goods/manage_products/search/'.$uri['search'].'/order_by/num_iid/order_parameter/desc/';
+            $config['uri_segment'] = 10; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
+            $search_query = str_replace('-',' ',urldecode($uri['search']));
+            
+            $this->db->select('*');
+            $this->db->from('info_product');
+            $this->db->like('product_id', $search_query);
+            $this->db->or_like('product_title', $search_query);     
+            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
+            $this->db->limit($limit, $offset);
+            $query = $this->db->get();			
+          
+            $this->db->select('*');
+            $this->db->from('info_product');
+            $this->db->like('product_id', $search_query);
+            $this->db->or_like('product_title', $search_query);     
+            $total_product = $this->db->get()->num_rows();
+            $this->data['product'] = $query->result_array();            
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
+        }
+        else
+        {
+            $pagination_url = 'jad_goods/manage_products/order_by/'.$uri['order_by'].'/order_parameter/'.$uri['order_parameter'].'/';
+			$search_query = FALSE;
+			$config['uri_segment'] = 8;
+            $this->db->select("*"); 
+            $this->db->from('info_product');
+            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
+            $this->db->limit($limit, $offset);
+	        $query = $this->db->get();
+			$this->data['product'] = $query->result_array();		 
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
+	        $total_product = $this->db->get('info_product')->num_rows();
+        }
+        		// Create user record pagination.
+		$this->load->library('pagination');	
+		$config['base_url'] = base_url().'index.php/'.$pagination_url.'page/';
+		$config['total_rows'] = $total_product;
+		$config['per_page'] = $limit; 
+		$this->pagination->initialize($config); 
+		
+		// Make search query and pagination data available to view.
+		$this->data['search_query'] = $search_query; // Populates search input field in view.
+		$this->data['pagination']['links'] = $this->pagination->create_links();
+		$this->data['pagination']['total_product'] = $total_product;
+    }
+
+    /**
+	 * get_new_series_num
+	 * 生成新的货号
+     * 生成10位随机货号，并判断该货号在数据库中是否存在，若存在，则重新生成
+	 */
+    function get_new_series_num()
+    {
+        $productId = $this->generate_randnum(10);
+        while($this->db->get_where('info_product', array('product_id' => $productId))->num_rows() != 0){
+            $productId = $this->generate_randnum(10);
+        }
+        return $productId;
+
+    }
+    /**
+	 * get_new_product_item_num
+	 * 生成新的商品编码
+     * 生成3位随机号，并判断该号在数据库中是否存在，若存在，则重新生成
+	 */
+    function get_new_product_item_num($productId)
+    {
+        $productItemId = $this->generate_randnum(3);
+        $pItemId = (string)$productId . (string)$productItemId;
+        while($this->db->get_where('info_product_item', array('item_id' => $pItemId))->num_rows() != 0){
+            $productItemId = $this->generate_randnum(3);
+            $pItemId = (string)$productId . (string)$productItemId;
+        }
+        return $pItemId;
+
+    }
+    /**
+	 * get_brand_list
+	 * 从现有店铺中获取品牌信息，目前从jadiiar和siiena中获取 
+	 */
+    function get_brand_list(){
+        //从不同店铺中获取品牌list，去重
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        $this->topsdk->autoload('SellercatsListGetRequest');
+        $this->topsdk->req->setNick('jadiiar');
+        $result = $this->topsdk->get_data();
+        $brandCid = '';
+        $brandArray = array();
+        if ( count($result) == 1){//当网络无法连接时，数组result的个数大于1;
+            $jadSellCatsListArr = $result['seller_cats']['seller_cat'];
+            for ( $i = 0 ; $i < count( $jadSellCatsListArr ) - 1 ; $i++ ){//品牌属性必然有子项目，所以品牌属性一定不是数组的最后一个元素
+                if ( $jadSellCatsListArr[$i]['name'] == '品牌' ){
+                    //获取品牌类目的类目ID
+                    $brandCid = $jadSellCatsListArr[$i]['cid'];
+                    break;
+                }
+            }
+            for ( $i = 0 ; $i < count( $jadSellCatsListArr ); $i++ ){
+                //遍历店铺类目的数组，如果类目的父类目ID为品牌类目的ID，那么就将该类目存入数组
+                if ( $jadSellCatsListArr[$i]['parent_cid'] == $brandCid ){
+                    array_push($brandArray,$jadSellCatsListArr[$i]['name']);
+                }
+            }
+            $this->topsdk->req->setNick('siiena');
+            $result = $this->topsdk->get_data();
+            //echo json_encode($result);
+            $brandCid = '';
+            $siiSellCatsListArr = $result['seller_cats']['seller_cat'];
+            for ( $i = 0 ; $i < count( $siiSellCatsListArr ) - 1 ; $i++ ){
+                if ( $siiSellCatsListArr[$i]['name'] == '品牌' ){
+                    $brandCid = $siiSellCatsListArr[$i]['cid'];
+                    break;
+                }
+            }
+            for ( $i = 0 ; $i < count( $siiSellCatsListArr ) ; $i++ ){
+                if ( $siiSellCatsListArr[$i]['parent_cid'] == $brandCid ){
+                    if ( !in_array($siiSellCatsListArr[$i]['name'],$brandArray) ){
+                        array_push($brandArray,$siiSellCatsListArr[$i]['name']);
+                    }
+                }
+            }
+            sort($brandArray);//对数组内容进行排序
+        }
+        return $brandArray;
+    }
+
 	/**
 	 * add_goods_first
 	 * 新增商品一级信息
@@ -169,83 +367,33 @@ class Jad_goods_model extends CI_Model {
     {
         return $this->db->get_where('info_product',array( 'product_id' => $productId ))->row_array();
     } 
-    function get_products()
-    {
-        $uri = $this->uri->uri_to_assoc(3);     
-        $limit = $this->config->item('pag_limit');
-        $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
-        if (array_key_exists('search', $uri))
-        {
-            $pagination_url = 'jad_goods/manage_products/search/'.$uri['search'].'/order_by/num_iid/order_parameter/desc/';
-            $config['uri_segment'] = 10; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
-            $search_query = str_replace('-',' ',urldecode($uri['search']));
-            
-            $this->db->select('*');
-            $this->db->from('info_product');
-            $this->db->like('product_id', $search_query);
-            $this->db->or_like('product_title', $search_query);     
-            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
-            $this->db->limit($limit, $offset);
-            $query = $this->db->get();			
-          
-            $this->db->select('*');
-            $this->db->from('info_product');
-            $this->db->like('product_id', $search_query);
-            $this->db->or_like('product_title', $search_query);     
-            $total_product = $this->db->get()->num_rows();
-            $this->data['product'] = $query->result_array();            
-			$this->data['orderBy'] = $uri['order_by'];		 
-			$this->data['orderPara'] = $uri['order_parameter'];		 
-        }
-        else
-        {
-            $pagination_url = 'jad_goods/manage_products/order_by/'.$uri['order_by'].'/order_parameter/'.$uri['order_parameter'].'/';
-			$search_query = FALSE;
-			$config['uri_segment'] = 8;
-            $this->db->select("*"); 
-            $this->db->from('info_product');
-            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
-            $this->db->limit($limit, $offset);
-	        $query = $this->db->get();
-			$this->data['product'] = $query->result_array();		 
-			$this->data['orderBy'] = $uri['order_by'];		 
-			$this->data['orderPara'] = $uri['order_parameter'];		 
-	        $total_product = $this->db->get('info_product')->num_rows();
-        }
-        		// Create user record pagination.
-		$this->load->library('pagination');	
-		$config['base_url'] = base_url().'index.php/'.$pagination_url.'page/';
-		$config['total_rows'] = $total_product;
-		$config['per_page'] = $limit; 
-		$this->pagination->initialize($config); 
-		
-		// Make search query and pagination data available to view.
-		$this->data['search_query'] = $search_query; // Populates search input field in view.
-		$this->data['pagination']['links'] = $this->pagination->create_links();
-		$this->data['pagination']['total_product'] = $total_product;
-    }
 
+ 	/**
+	 * publish_product_items
+	 * 发布商品信息到指定的店铺 
+     * JADIIAR二期的主要方法
+	 */
     function publish_product_items(){
-        $sellerCats = $this->input->post('seller_cats_str');
-        $itemTitle = $this->input->post('product_title');
-        $itemShop = $this->input->post('publish_shop');
-        //获取产品ID
-        $productId = $this->input->post('product_id');
         //从发布商品页面获取该商品发布必须的参数
-        $itemNum = $this->input->post('product_items_num');
-        $itemPrice = $this->input->post('price');
-        $itemStuffStatus = $this->input->post('stuffStatus');
+        $itemShop = $this->input->post('publish_shop');//店铺的淘宝名称，如：肥肥9089、jadiiar、siiena
+        $sellerCats = $this->input->post('seller_cats_str');//店铺类别的类别id串，如：123456,12311223,234567,
 
-        $itemDesc = $this->input->post('format_item_desc');
+        $cId = $this->input->post('cid');//宝贝所属叶子类目id
+        $itemTitle = $this->input->post('product_title');//宝贝标题
+        $productId = $this->input->post('product_id');//获取产品ID
+        $itemNum = $this->input->post('product_items_num');//宝贝数量
+        $itemPrice = $this->input->post('product_price');//宝贝一口价
+        $itemStuffStatus = $this->input->post('stuffStatus');//宝贝类型，全新还是二手
+
+        $itemDesc = $this->input->post('format_item_desc');//宝贝描述，在参数传递的时候通过了html编码，避免post方法的自动转换
         $itemDesc = html_entity_decode($itemDesc);
 
-        //var_dump($itemDesc);
         $itemType = 'fixed'; //发布类型，fixed:一口价；auction:拍卖
         $itemLoState = '海外'; //宝贝所在地
         $itemLoCity = '美国'; //宝贝所在城市
         $itemFreightPayer = 'seller'; //邮费承担方式，seller：卖家承担；buyer：买家承担
-        $cId = $this->input->post('cid');
-        $locationCheckbox = $this->input->post('location_bought');
+
+        $locationCheckbox = $this->input->post('location_bought');//采购地
         //图片在远程piwigo上的地址
         $item_remote_url = $this->input->post('img_remote_url');
 
@@ -260,9 +408,7 @@ class Jad_goods_model extends CI_Model {
         if( $this->input->post('must_props') != '' ){
             $props = $props . $this->input->post('must_props');
         }
-
-        //$skuProps = $this->input->post('product_item_props');
-        $propertyAlias = $this->input->post('props_property_alias');
+        $propertyAlias = $this->input->post('props_property_alias');//属性别名
         $inputStr = $this->input->post('product_inputs_str');
         $inputPids = $this->input->post('product_inputs_pids');
 
@@ -290,60 +436,33 @@ class Jad_goods_model extends CI_Model {
         $this->topsdk->req->setSkuQuantities($this->input->post('sku_quantities'));
         $this->topsdk->req->setSkuOuterIds($this->input->post('sku_outer_ids'));
         $this->topsdk->req->setSkuPrices($this->input->post('sku_prices'));
-        
-        /* 
-        var_dump($itemNum);
-        var_dump($itemPrice);
-        var_dump($itemType);
-        var_dump($itemStuffStatus);
-        var_dump($itemTitle);
-        var_dump($itemDesc);
-        var_dump($itemLoState);
-        var_dump($itemLoCity);
-        var_dump($cId);
-        var_dump($props);
-        var_dump($propertyAlias);
-        var_dump($inputPids);
-        var_dump($inputStr);
-
-        var_dump($this->input->post('sku_properties'));
-        var_dump($this->input->post('sku_quantities'));
-        var_dump($this->input->post('sku_outer_ids'));
-        var_dump($this->input->post('sku_prices'));
-         */
 
         //远程地址访问失败：$this->topsdk->req->setImage('@http://service.jadiiar.com/piwigo/i.php?/upload/2013/05/12/20130512213849-1e08cb99-me.jpg');
         //本地绝对地址访问成功：$this->topsdk->req->setImage('@C:\Users\ChenJ\Desktop\20130522045702-f37e732882-me.jpg');
 
         //获取图片的名称，然后通过piwigo的本地绝对地址来确定文件名称
-        
         //$localPath = $this->jad_global_model->get_local_image_path($item_remote_url);
         $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
 
-        //var_dump($localPath); //debug get_local_image_path()
         if(file_exists($localPath))
         {
             $this->topsdk->req->setImage('@'.$localPath);
-            //var_dump($localPath); //debug get_local_image_path()
         }
-        //return 0; //debug
         //采购地为海外或港澳台的时候，才有global_stock的设置，很有可能和消费者保障权益有关，现货必须在规定时间发货
         if($locationCheckbox == 2){
             $this->topsdk->req->setGlobalStockType($this->input->post('global_type'));
             $this->topsdk->req->setGlobalStockCountry($this->input->post('sel_global_stock'));
         }
-
         //用于保存各个SKU操作的回馈信息
         $alertMessage = '';
-
-        //参数为sessionkey,在配置文件中读取;若访问不同的店铺，就要获取不同的sessionkey
+        //参数为sessionkey,在配置文件中读取;
+        //如果是多店铺的情况，则要根据参数$itemShop的不同来获取不同的sessionkey，从而访问不同的店铺。
         $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-
         if ( count($result) == 1){
             //操作成功
             $alertMessage = $alertMessage.'<p class="">新增宝贝信息成功,ID:'.$result['item']['num_iid'].'</p>';
             //发布成功，需要对数据继续处理，获取生成的num_iid,并存入ERP的数据库，与已发布数据保持一致。
-            //注意，若该产品类目的非关键属性与非销售属性中存在必须属性，则要加入到产品信息表中，以备修改宝贝信息时，直接读取
+            //注意，若该产品类目的非关键属性与非销售属性中存在必选属性，则要加入到产品信息表中，以备修改宝贝信息时，直接读取
             $pd_props_update = ''; 
             if ( $this->input->post('product_props') != '' ){
                 $pd_props_update = $pd_props_update.$this->input->post('product_props'); 
@@ -372,6 +491,7 @@ class Jad_goods_model extends CI_Model {
                 $this->topsdk->req->setFields("sku_id,num_iid,properties,quantity,price,outer_id,created,modified,status");
                 $this->topsdk->req->setNumIids($result['item']['iid']);
                 //只有带sessionkey的方法，才能获取到outer_id
+                //这个地方同样涉及到选择sessionkey的问题
                 $skusList = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
                 $skusArr = $skusList['skus']['sku'];
 
@@ -550,6 +670,69 @@ class Jad_goods_model extends CI_Model {
         redirect('jad_goods/manage_product_items/'.$productId);	
     }
 
+    /**
+	 * get_items_catalogue
+	 * 获取商品目录
+	 */
+	function get_items_catalogue(){
+        $uri = $this->uri->uri_to_assoc(3);     
+        $limit = $this->config->item('pag_limit');
+        $offset = (isset($uri['page'])) ? $uri['page'] : FALSE;	
+        if (array_key_exists('search', $uri))
+        {
+            $pagination_url = 'jad_goods/items_catalogue/search/'.$uri['search'].'/order_by/num_iid/order_parameter/desc/';
+            $config['uri_segment'] = 10; // Changing to 6 will select the 6th segment, example 'controller/function/search/query/page/10'.
+            $search_query = str_replace('-',' ',urldecode($uri['search']));
+            
+            $this->db->select('*');
+            $this->db->from('product_item_view');
+            $where ="product_id like '%".$search_query."%' or item_id like '%".$search_query."%' or item_colour like '%".$search_query."%' or item_desc like '%".$search_query."%' ";
+            $this->db->where($where);
+            //$this->db->where('product_id', $productId);
+            //$this->db->like('product_id', $search_query);
+            //$this->db->or_like('product_title', $search_query);     
+            $this->db->limit($limit, $offset);
+            $query = $this->db->get();			
+          
+            $this->db->select('*');
+            $this->db->from('product_item_view');
+            $this->db->where($where);
+            //$this->db->where('product_id', $productId);
+            //$this->db->like('product_id', $search_query);
+            //$this->db->or_like('product_title', $search_query);     
+            $total_items_catalogue = $this->db->get()->num_rows();
+            $this->data['items_catalogue'] = $query->result_array();            
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
+        }
+        else
+        {
+            $pagination_url = 'jad_goods/items_catalogue/order_by/'.$uri['order_by'].'/order_parameter/'.$uri['order_parameter'].'/';
+			$search_query = FALSE;
+			$config['uri_segment'] = 8;
+            $this->db->select("*"); 
+            $this->db->from('product_item_view');
+            $this->db->order_by($uri['order_by'], $uri['order_parameter']); 
+            $this->db->limit($limit, $offset);
+	        $query = $this->db->get();
+			$this->data['items_catalogue'] = $query->result_array();		 
+			$this->data['orderBy'] = $uri['order_by'];		 
+			$this->data['orderPara'] = $uri['order_parameter'];		 
+	        $total_items_catalogue = $this->db->get('product_item_view')->num_rows();
+        }
+        // Create user record pagination.
+		$this->load->library('pagination');	
+		$config['base_url'] = base_url().'index.php/'.$pagination_url.'page/';
+		$config['total_rows'] = $total_items_catalogue;
+		$config['per_page'] = $limit; 
+		$this->pagination->initialize($config); 
+		
+		// Make search query and pagination data available to view.
+		$this->data['search_query'] = $search_query; // Populates search input field in view.
+		$this->data['pagination']['links'] = $this->pagination->create_links();
+		$this->data['pagination']['total_items_catalogue'] = $total_items_catalogue;
+	}
+
     function get_product_items($productId)
     {
         $uri = $this->uri->uri_to_assoc(4);     
@@ -653,92 +836,6 @@ class Jad_goods_model extends CI_Model {
 
 	  
 	}
-
-    function update_product($pId)
-    {
-        $this->load->library('form_validation');
-		// Set validation rules.
-		$validation_rules = array(
-			array('field' => 'product_title', 'label' => '产品标题', 'rules' => 'required|max_length[30]'),
-			array('field' => 'product_desc', 'label' => '产品描述', 'rules' => 'required|min_length[5]|max_length[100]')
-		);
-		$this->form_validation->set_rules($validation_rules);
-		if ($this->form_validation->run())
-		{
-            //需要更改相应inputs_str的信息
-            $inputsPidsArr = explode(',',$this->input->post('inputs_pids'));
-            $inputsStrArr = explode(',',$this->input->post('inputs_str'));
-            //当inputs_pids中含有品牌的id：20000时，则进行替换
-            if (in_array('20000',$inputsPidsArr)){
-                $inputsStrArr[array_search('20000', $inputsPidsArr)] = $this->input->post('product_brand');
-            }
-
-			$profile_data = array(
-                'product_title' => $this->input->post('product_title'),
-                'inputs_str' => implode(',',$inputsStrArr),
-                'product_brand' => $this->input->post('product_brand'),
-                'product_desc' => $this->input->post('product_desc'),
-                'product_img_url' => $this->input->post('product_img_url')
-			);		
-			$this->db->where('product_id', $pId);
-			$this->db->update('info_product', $profile_data); 
-            //注意，若没有改动数据的提交，会被数据库认为是没有修改，从而$this->db->affected_rows()返回0
-
-            /***判断该产品是否已经提交，若提交，则要修改宝贝的相应信息**************************************************
-             * 新修改，不允许在这个地方去修改宝贝信息
-
-            if ($this->input->post('num_iid') != '' ){
-                $this->load->library('TopSdk', $this->config->item('topapi_config') );
-                $this->topsdk->autoload('ItemUpdateRequest');
-                $this->topsdk->req->setNumIid($this->input->post('num_iid'));
-                $this->topsdk->req->setTitle($this->input->post('product_title')); 
-                //var_dump($this->input->post('product_img_url'));
-                //$localPath = $this->jad_global_model->get_local_image_path($this->input->post('product_img_url'));
-                $localPath = 'C:\Users\ChenJ\Desktop\20130522045702-f37e7322-me.jpg';
-
-                if(file_exists($localPath))
-                {
-                    $this->topsdk->req->setImage('@'.$localPath);
-                }
-                        //var_dump($this->input->post('num_iid'));
-                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-                $alertMessage = '';
-                if ( count($result) == 1){
-                    $alertMessage = $alertMessage.'<p class="">宝贝信息更新成功,ID:'.$result['item']['num_iid'].'</p>';
-                }else{
-                    //发布失败
-                    if($result['msg']=='Remote service error'){
-                        $alertMessage = $alertMessage.'<p class="error_msg">宝贝信息更新失败:'.$result['sub_msg'].'</p>';
-                    }else{
-                        $alertMessage = $alertMessage.'<p class="error_msg">宝贝信息更新失败:'.$result['msg'].'</p>';
-                    }
-                }
-            }
-            $this->session->set_flashdata('message',$alertMessage);
-            **************************************************************************************************************/
-            redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
-		}
-		$this->data['message'] = validation_errors('<p class="error_msg">', '</p>');
-		return FALSE;
-    }
- 	/**
-	 * update_products
-     * 通过checkbox的选择，删除相应的产品信息
-     * 以下情况为把产品信息设置过期的条件：
-     * 1、存在商品信息，该商品信息已经购买过实际的商品；
-     * 2、存在商品信息，该商品信息正在淘宝的店铺上发布；
-	 */
-    function update_products()
-    {
-        if ($delete_product = $this->input->post('delete_product'))
-        {
-            foreach($delete_product as $product_id => $delete)
-            {
-                $this->db->delete('info_product', array('product_id' => $product_id)); 
-            }
-        }
-        redirect('jad_goods/manage_products/order_by/num_iid/order_parameter/desc');	
-    }
  	/**
 	 * update_item
      * 通过checkbox的选择，删除相应的产品信息
@@ -1229,86 +1326,5 @@ class Jad_goods_model extends CI_Model {
         }
 
         echo html_entity_decode($desc);
-    }
-    /**
-     * update_sku_items
-     * AJAX方法
-     */
-    function update_sku_items(){
-        $numIid = $this->input->post('numIid');
-        $skuPropertiesDel = $this->input->post('skuPropDel');
-        $skuPropertiesEdit = $this->input->post('skuPropEdit');
-        //获取需要删除的sku的sku_properties参数数组
-        $skuPropertiesDelArr = explode("#",$skuPropertiesDel);
-        $skuPropertiesEditArr = explode("#",$skuPropertiesEdit);
-
-        $this->load->library('TopSdk', $this->config->item('topapi_config') );
-        //更新
-        $alertMessage = '';
-        $this->topsdk->autoload('ItemSkuPriceUpdateRequest');
-        for($k = 0; $k < count($skuPropertiesEditArr); $k++){
-            $skuPropertiesEditItemArr = explode(",",$skuPropertiesEditArr[$k]);
-            if ( $skuPropertiesEditItemArr[4] != '' ){
-                //var_dump($skuPropertiesEditItemArr[4]);
-                $this->topsdk->req->setNumIid($numIid);
-                $this->topsdk->req->setProperties($skuPropertiesEditItemArr[0]);
-                $this->topsdk->req->setPrice($skuPropertiesEditItemArr[1]);
-                $this->topsdk->req->setQuantity($skuPropertiesEditItemArr[2]);
-                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-                //var_dump($result);
-                if ( count($result) == 1){
-                    //操作成功
-                    $alertMessage = $alertMessage.'<p class="">SKU信息更新成功,ID:'.$result['sku']['sku_id'].'</p>';
-                }else{
-                    //操作失败
-                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息更新失败:'.$result['msg'].'</p>';
-                }
-            }
-        }
-        //新增
-        $this->topsdk->autoload('ItemSkuAddRequest');
-        for($k = 0; $k < count($skuPropertiesEditArr); $k++){
-            $skuPropertiesEditItemArr = explode(",",$skuPropertiesEditArr[$k]);
-            if ( $skuPropertiesEditItemArr[4] == '' ){
-                $this->topsdk->req->setNumIid($numIid);
-                $this->topsdk->req->setProperties($skuPropertiesEditItemArr[0]);
-                $this->topsdk->req->setPrice($skuPropertiesEditItemArr[1]);
-                $this->topsdk->req->setQuantity($skuPropertiesEditItemArr[2]);
-                $this->topsdk->req->setOuterId($skuPropertiesEditItemArr[3]);
-                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-                //需要入库绑定
-                $this->db->where('item_id', $skuPropertiesEditItemArr[3]);
-                $this->db->update('info_product_item', array( 'sku_id' => $result['sku']['sku_id'] , 'item_expired'  => '1' )); 
-                if ( count($result) == 1){
-                    //操作成功
-                    $alertMessage = $alertMessage.'<p class="">新增SKU信息成功,ID:'.$result['sku']['sku_id'].'</p>';
-                }else{
-                    //操作失败
-                    $alertMessage = $alertMessage.'<p class="error_msg">新增SKU信息失败:'.$result['msg'].'</p>';
-                }
-            }
-        }
-        //删除sku，根据item_id来删除
-        if($skuPropertiesDel != ''){
-            $this->topsdk->autoload('ItemSkuDeleteRequest');
-            for($s = 0; $s < count($skuPropertiesDelArr); $s++){
-                $skuPropertiesDelItemArr = explode(",",$skuPropertiesDelArr[$s]);
-                $this->topsdk->req->setNumIid($numIid);
-                $this->topsdk->req->setProperties($skuPropertiesDelItemArr[0]);
-                $result = $this->topsdk->get_auth_data($this->config->item('topapi_session_key'));
-                $this->db->where('item_id', $skuPropertiesDelItemArr[1]);
-                $this->db->update('info_product_item', array( 'item_expired'  => '2' )); 
-                if ( count($result) == 1){
-                    //操作成功
-                    $alertMessage = $alertMessage.'<p class="">SKU信息删除成功,NUM_ID:'.$result['sku']['num_iid'].'</p>';
-                }else{
-                    //操作失败
-                    $alertMessage = $alertMessage.'<p class="error_msg">SKU信息删除失败:'.$result['msg'].'</p>';
-                }
-            }
-        }
-        
-        echo $numIid;
-        echo $alertMessage;
     }
 }

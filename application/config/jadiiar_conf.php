@@ -19,7 +19,7 @@ $config['topapi_config'] = array(
     //'app_key'=>'21669164', 
     //'secret_key'=>'b4cc7e5f5bbcadaf1ced4dc49265adcc',
 );
-$config['topapi_session_key'] = '61027062875f471e03547688e335ec6c6f8036f0fa73344450669192';
+$config['topapi_session_key'] = '6101c14e7226b465810993155d1b06b46e31be65fa66162450669192';
 
 //$config['nick_name'] = 'siiena';
 $config['nick_name'] = 'jadiiar';

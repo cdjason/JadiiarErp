@@ -10,7 +10,17 @@ class Jad_global_model extends CI_Model {
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
 	// 获取常用数据
 	###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++###	
-	
+	    /**
+     * get_areas_info
+     */
+	function get_areas_info(){
+        $this->load->library('TopSdk', $this->config->item('topapi_config') );
+        $this->topsdk->autoload('AreasGetRequest');
+        $this->topsdk->req->setFields("id,type,name,parent_id,zip");
+        $result = $this->topsdk->get_data();
+        return json_encode($result['areas']['area']);
+	}
+
 	/**
 	 * 1.根据用户角色ID，获取用户名单.
 	 * get_staff_list_by_role_id
@@ -386,7 +396,7 @@ class Jad_global_model extends CI_Model {
             $img_type = substr($fUrl,strrpos($fUrl,'upload') + 42 );
         }
 
-	 	$subUrl = 'http://service.jadiiar.com/piwigo/i.php?/upload/'.$img_name.'-'.$iType.'.'.$img_type ;
+	 	$subUrl = 'http://141.211.71.161/piwigo/i.php?/upload/'.$img_name.'-'.$iType.'.'.$img_type ;
 	 	return $subUrl;
 	 }
 	function get_local_image_path($url){

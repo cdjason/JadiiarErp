@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <title>JaddiarERP</title>
 <?php $this->load->view('includes/jad_head'); ?>  
-<link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>CLEditor1_4_3/jquery.cleditor.css">
 </head>
 <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
 <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->

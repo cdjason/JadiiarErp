@@ -2,8 +2,7 @@
 <script src="<?php echo $includes_dir;?>lib/bootstrap/js/bootstrap.js"></script>
 <script src="<?php echo $includes_dir;?>lib/bootstrap-confirm.js"></script>
 <script src="<?php echo $includes_dir;?>CLEditor1_4_3/jquery.cleditor.min.js"></script>
-
-<script src="<?php echo $includes_dir;?>js/jquery.validate.min.js"></script>
+<script src="<?php echo $includes_dir;?>js/jquery.validate.js"></script>
 
 <script type="text/javascript">
     $("[rel=tooltip]").tooltip();

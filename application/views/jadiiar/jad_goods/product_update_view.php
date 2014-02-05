@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <title>JaddiarERP</title>
 <?php $this->load->view('includes/jad_head'); ?>  
-<link rel="stylesheet" type="text/css" href="<?php echo $includes_dir;?>CLEditor1_4_3/jquery.cleditor.css">
 </head>
 <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
 <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
@@ -32,46 +31,47 @@
     <div class="container-fluid">
         <div class="row-fluid">
             <?php $this->load->view('includes/jad_message'); ?>  
-            <?php $attributes = array('id' => 'test_form','onSubmit' => 'return checkAll(this)');echo form_open(current_url(), $attributes);?>  	
-            <div class="row-fluid">
-                <div class="span2">
-                    <button type="submit" class="btn btn-primary span12" id="form_btn" /><i class="icon-plus"></i>  更新</button>
-                    <input type="hidden" name="update_product" value="1" />
-                </div>
-                <div class="span1" id = "ajaxPic">
-                </div>
-            </div></br>
+            <?php $attributes = array('id' => 'product_update_form','class' => 'form-horizontal');echo form_open(current_url(), $attributes);?>  	
 
-            <div class="well">
-
-                <div class="row-fluid">
-                    <div class="span2" ><b>产品名称</b></div>
-                    <div class="span10" >
-                        <input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" value = "<?php echo $productInfo['product_title']; ?>" />
-                    </div>
-                </div><br>              
-                <div class="row-fluid">
-                    <div class="span2" ><b>产品品牌</b></div>
-                    <div class="span10" >
+  <div class="control-group">
+    <label class="control-label" for="product_title">产品名称</label>
+    <div class="controls">
+    <input = "text" id = "product_title" name = "product_title" class="span6" placeholder="不要超过30个字符" value = "<?php echo $productInfo['product_title']; ?>" />
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="product_brand">产品品牌</label>
+    <div class="controls">
                         <select name = "product_brand" id = "product_brand">
                         <option value = "">--请选择--</option>
                         <?php for ( $i =0;$i<count($brandList);$i++ ){ 
                         ?>
                         <option value = "<?php echo $brandList[$i]; ?>"><?php echo $brandList[$i]; ?></option>
                         <?php } ?> 
-
                         </select>
-                    </div>
-                </div><br>              
-                <div class="row-fluid">
-                    <div class="span2" ><b>产品图片URL</b></div>
-                    <div class="span10" ><input = "text" id = "product_img_url" name = "product_img_url" class="span12" value = "<?php echo $productInfo['product_img_url']; ?>"/></div>
-                </div><br>         
-                <div class="row-fluid">
-                    <div class="span2" ><b>产品描述</b></div>
-                    <div class="span10" ><input = "text" id = "product_desc" name = "product_desc" class="span12" placeholder="不要出现标点符号" value = "<?php echo $productInfo['product_desc']; ?>"/></div>
-                </div>              
-            </div>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="product_img_url">产品图片URL</label>
+    <div class="controls">
+    <input = "text" id = "product_img_url" name = "product_img_url" class="span11" value = "<?php echo $productInfo['product_img_url']; ?>"/>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="product_desc">产品描述</label>
+    <div class="controls">
+         <input = "text" id = "product_desc" name = "product_desc" class="span11" placeholder="不要出现标点符号" value = "<?php echo $productInfo['product_desc']; ?>"/>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="inputPassword"></label>
+    <div class="controls">
+        <button type="submit" class="btn btn-primary span2" id="form_btn" /><i class="icon-plus"></i>  更新</button>
+        <input type="hidden" name="update_product" value="1" />
+    </div>
+  </div>
+
             <input type="hidden" name="cid" id="cid"/>
             <input type="hidden" name="inputs_pids" value = "<?php echo $productInfo['inputs_pids']; ?>"/>
             <input type="hidden" name="inputs_str" value = "<?php echo $productInfo['inputs_str']; ?>"/>
@@ -82,13 +82,6 @@
 </div>
 <?php $this->load->view('includes/jad_scripts'); ?>
 <script>
-function checkAll(form){
-    if( $("#product_brand")[0].value == ''){
-        alert('尚未选择产品品牌，请选择!');
-        return false;
-    }
-
-}
 /*
 $.getJSON("http://127.0.0.1/JadiiarErp/top_cats/11", function(json){
   alert(json.childCategoryList.categoryPropList);
@@ -109,10 +102,40 @@ $(document).ready(function(){
     if ($('#product_brand')[0].options.length == 1){
         alert('获取淘宝店铺品牌信息失败，请检查网络连接!');
     }
+    //新增产品描述的验证方法 
+    jQuery.validator.addMethod("product_desc_check", function(value, element) {
+        return this.optional(element) || /^[\u0391-\uFFE5\w\s]+$/.test(value);
+    }, "宝贝描述只能包括中文字、英文字母、数字、空格和下划线"); 
+    
+    //为表单绑定验证
+    $('#product_update_form').validate({
+        rules: {
+          product_title: {
+            required: true,
+            maxlength: 30
+          },
+          product_brand: {
+            required: true
+          },
+          product_desc: {
+            product_desc_check: true,
+            required: true
+          },
+          product_img_url: {
+            required: true,
+            url:true 
+          }
+        },
+        highlight: function(element) {
+            $(element).closest('.control-group').removeClass('success').addClass('error');
+        },
+        success: function(element) {
+            element
+            .text('OK!').addClass('valid')
+            .closest('.control-group').removeClass('error').addClass('success');
+        }
+    });
 });
 </script>  
 </body>
 </html>
-
-
-
